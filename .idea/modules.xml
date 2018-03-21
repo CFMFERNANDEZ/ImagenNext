@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ImagenNext.iml" filepath="$PROJECT_DIR$/ImagenNext.iml" />
+      <module fileurl="file://C:\OB-Workspace\Android\ImagenNext\ImagenNext.iml" filepath="C:\OB-Workspace\Android\ImagenNext\ImagenNext.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\OB-Workspace\Android\ImagenNext\app\app.iml" filepath="C:\OB-Workspace\Android\ImagenNext\app\app.iml" />
     </modules>
   </component>
 </project>

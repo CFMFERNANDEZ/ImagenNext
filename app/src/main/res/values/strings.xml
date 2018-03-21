@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Sample HW Key</string>
+    <string name="app_name">VFPT Demo</string>
+
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="test_text">Test Text</string>
+    <string name="test_text2">Test Text The revenge</string>
+
+    <string name="title_activity_order_screen">OrderScreenActivity</string>
 </resources>
