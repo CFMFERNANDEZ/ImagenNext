@@ -8,4 +8,10 @@
     <string name="test_text2">Test Text The revenge</string>
 
     <string name="title_activity_order_screen">OrderScreenActivity</string>
+
+    <string name="title_activity_wsmdselection">WSMDSelectionActivity</string>
+    <string name="wellcome_msg">Select or Scann your WSMD code</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+
 </resources>

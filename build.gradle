@@ -13,8 +13,22 @@ buildscript {
 }
 
 allprojects {
+    ant.condition(property:"os", value:"windows"){os(family:"windows")}
+    ant.condition(property:"os", value:"unix"){os(family:"unix")}
     repositories {
         jcenter()
+    }
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            switch (ant.properties.os) {
+                case 'windows':
+                    options.compilerArgs.add('-Xbootclasspath/p:' + projectDir.toString().concat("\\libs\\BT300Ctrl.jar;"))
+                    break
+                case 'unix':
+                    options.compilerArgs.add('-Xbootclasspath/p:' + projectDir.toString().concat("/libs/BT300Ctrl.jar:"))
+                    break
+            }
+        }
     }
 }
 

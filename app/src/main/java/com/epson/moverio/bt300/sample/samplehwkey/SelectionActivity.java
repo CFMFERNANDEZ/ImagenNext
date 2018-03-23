@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.Result;
@@ -32,6 +33,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     private View mControlsView;
     private ListView listView;
+    private TextView wsmdText;
     private static final String TAG = "MyStt3Activity";
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private static final int CAMERA_PIC_REQUEST = 1337;
@@ -44,6 +46,13 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection);
+        //HERE WE READ THE VALUE SENDED PREVIUSLY
+        String WSMD  = getIntent().getStringExtra("WMSD");
+        wsmdText = (TextView)findViewById(R.id.mfseq_wsmd);
+        wsmdText.setText(WSMD);
+        Toast.makeText(getApplicationContext(), WSMD, Toast.LENGTH_LONG).show();
+
+
         values = new ArrayList();
         values.add(new MfseqOrder(1,"AND-FIGURE-001", "Android figure", "895221030116", "125606-001", "open"));
         values.add(new MfseqOrder(2,"ASM-DSCR-006", "ASM001", "237645", "125152-001", "open"));
@@ -63,16 +72,19 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 Toast.makeText(getApplicationContext(), item.getAsmDscr() + " selected", Toast.LENGTH_LONG).show();
             }
         });
-        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-        if (currentapiVersion >= android.os.Build.VERSION_CODES.M) {
-            if (hasPermissions(this, PERMISSIONS)) {
-                Toast.makeText(getApplicationContext(), "Permission already granted", Toast.LENGTH_LONG).show();
-                mSpeechRecognizerManager = new SpeechRecognizerManager(this);
-                mSpeechRecognizerManager.setOnResultListner(this);
-            } else {
-                ActivityCompat.requestPermissions(this, PERMISSIONS, ALL_PERMISSION);
-            }
-        }
+        mSpeechRecognizerManager = new SpeechRecognizerManager(this);
+        mSpeechRecognizerManager.setOnResultListner(this);
+
+//        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+//        if (currentapiVersion >= android.os.Build.VERSION_CODES.M) {
+//            if (hasPermissions(this, PERMISSIONS)) {
+//                Toast.makeText(getApplicationContext(), "Permission already granted", Toast.LENGTH_LONG).show();
+//                mSpeechRecognizerManager = new SpeechRecognizerManager(this);
+//                mSpeechRecognizerManager.setOnResultListner(this);
+//            } else {
+//                ActivityCompat.requestPermissions(this, PERMISSIONS, ALL_PERMISSION);
+//            }
+//        }
     }
 
     public void QrScanner(){

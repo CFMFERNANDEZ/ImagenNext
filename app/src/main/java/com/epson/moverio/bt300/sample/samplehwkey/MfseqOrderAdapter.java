@@ -1,6 +1,7 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.content.Context;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ public class MfseqOrderAdapter extends ArrayAdapter<MfseqOrder> {
 
     @Override
     public View getView(int i, View view, ViewGroup parent) {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.mfseqorderlist, parent, false);
 
@@ -47,21 +49,21 @@ public class MfseqOrderAdapter extends ArrayAdapter<MfseqOrder> {
         asmCode = (TextView) rowView.findViewById(R.id.mfseq_asmcode);
         flowId = (TextView) rowView.findViewById(R.id.mfseq_flowid);
         lotSerial = (TextView) rowView.findViewById(R.id.mfseq_serialn);
-        status = (ImageView) rowView.findViewById(R.id.mfseq_status);
+//        status = (ImageView) rowView.findViewById(R.id.mfseq_status);
 
         asmDscr.setText(mfseqOrders.get(i).getAsmDscr());
         asmCode.setText(mfseqOrders.get(i).getAsmCode());
         flowId.setText(mfseqOrders.get(i).getFlowId());
         lotSerial.setText(mfseqOrders.get(i).getLotSerial());
 
-        String s = mfseqOrders.get(i).getStatus();
-        if (s.contains("closed")) {
-            status.setImageResource(R.mipmap.closed);
-        } else if (s.contains("process")) {
-            status.setImageResource(R.mipmap.process);
-        } else {
-            status.setImageResource(R.mipmap.open);
-        }
+//        String s = mfseqOrders.get(i).getStatus();
+//        if (s.contains("closed")) {
+//            status.setImageResource(R.mipmap.closed);
+//        } else if (s.contains("process")) {
+//            status.setImageResource(R.mipmap.process);
+//        } else {
+//            status.setImageResource(R.mipmap.open);
+//        }
         return rowView;
     }
 }

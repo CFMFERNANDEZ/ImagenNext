@@ -9,11 +9,20 @@ tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
 
 <!-- This FrameLayout insets its children based on system windows using
      android:fitsSystemWindows. -->
+
+    <TextView
+        android:id="@+id/mfseq_wsmd"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textSize="25sp"
+        android:text="WSMD SELECCIONADA"
+        android:keepScreenOn="true"
+        android:layout_gravity="top" />
+
 <FrameLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
-
     <LinearLayout
         android:id="@+id/fullscreen_content_controls"
         style="?metaButtonBarStyle"

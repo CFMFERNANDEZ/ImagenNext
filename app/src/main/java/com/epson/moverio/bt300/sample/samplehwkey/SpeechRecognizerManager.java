@@ -2,32 +2,30 @@ package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import edu.cmu.pocketsphinx.Assets;
-import edu.cmu.pocketsphinx.Hypothesis;
-import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 
 /**
  * Created by CellFusion on 3/15/2018.
  */
 
-public class SpeechRecognizerManager {
+public class SpeechRecognizerManager implements SensorEventListener {
 
+    /*SENSOR CONSTANTS*/
+    private final int TAPPED = 2;
+    private SensorManager mSensorManager;
 
     /* Named searches allow to quickly reconfigure the decoder */
     private static final String KWS_SEARCH = "wakeup";
     /* Keyword we are looking for to activate menu */
     private static final String KEYPHRASE = "ok robot";
-    private edu.cmu.pocketsphinx.SpeechRecognizer mPocketSphinxRecognizer;
     private Context mContext;
     protected Intent mSpeechRecognizerIntent;
     protected android.speech.SpeechRecognizer mGoogleSpeechRecognizer;
@@ -36,45 +34,7 @@ public class SpeechRecognizerManager {
 
     public SpeechRecognizerManager(Context context) {
         this.mContext = context;
-        initPockerSphinx();
         initGoogleSpeechRecognizer();
-    }
-
-    private void initPockerSphinx() {
-
-        new AsyncTask<Void, Void, Exception>() {
-            @Override
-            protected Exception doInBackground(Void... params) {
-                try {
-                    Assets assets = new Assets(mContext);
-                    //Performs the synchronization of assets in the application and external storage
-                    File assetDir = assets.syncAssets();
-                    //Creates a new speech recognizer builder with default configuration
-                    SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
-                    //Set Dictionary and Acoustic Model files
-                    speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
-                    speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
-                    // Threshold to tune for keyphrase to balance between false alarms and misses
-                    speechRecognizerSetup.setKeywordThreshold(1e-45f);
-                    //Creates a new SpeechRecognizer object based on previous set up.
-                    mPocketSphinxRecognizer = speechRecognizerSetup.getRecognizer();
-                    mPocketSphinxRecognizer.addListener(new PocketSphinxRecognitionListener());
-                    // Create keyword-activation search.
-                    mPocketSphinxRecognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
-                } catch (IOException e) {
-                    return e;
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Exception result) {
-                if (result != null) {
-                } else {
-                    restartSearch(KWS_SEARCH);
-                }
-            }
-        }.execute();
     }
 
     private void initGoogleSpeechRecognizer() {
@@ -86,68 +46,12 @@ public class SpeechRecognizerManager {
     }
 
     public void destroy() {
-        if (mPocketSphinxRecognizer != null) {
-            mPocketSphinxRecognizer.cancel();
-            mPocketSphinxRecognizer.shutdown();
-            mPocketSphinxRecognizer = null;
-        }
         if (mGoogleSpeechRecognizer != null) {
             mGoogleSpeechRecognizer.cancel();
             mGoogleSpeechRecognizer.destroy();
-            mPocketSphinxRecognizer = null;
         }
     }
 
-    private void restartSearch(String searchName) {
-        mPocketSphinxRecognizer.stop();
-        mPocketSphinxRecognizer.startListening(KWS_SEARCH);
-
-    }
-
-    protected class PocketSphinxRecognitionListener implements edu.cmu.pocketsphinx.RecognitionListener {
-
-        @Override
-        public void onBeginningOfSpeech() {
-        }
-
-
-        /**
-         * In partial result we get quick updates about current hypothesis. In
-         * keyword spotting mode we can react here, in other modes we need to wait
-         * for final result in onResult.
-         */
-        @Override
-        public void onPartialResult(Hypothesis hypothesis) {
-            if (hypothesis == null)
-                return;
-            String text = hypothesis.getHypstr();
-            if (text.equals(KEYPHRASE)) {
-                Log.d("---PARTIALRESULT--", text);
-                mGoogleSpeechRecognizer.startListening(mSpeechRecognizerIntent);
-                mPocketSphinxRecognizer.cancel();
-            }
-        }
-
-        @Override
-        public void onResult(Hypothesis hypothesis) {
-            String text = hypothesis.getHypstr();
-            Log.d("---POCKETSPHINXRESULT--", text);
-            if (text.equals(KEYPHRASE)) {
-            }
-        }
-
-        @Override
-        public void onEndOfSpeech() {
-            Log.d("----POCKETSPHINXEND--", "onEndOfSpeech");
-        }
-
-        public void onError(Exception error) {
-        }
-
-        @Override
-        public void onTimeout() {
-        }
-    }
 
     protected class GoogleRecognitionListener implements android.speech.RecognitionListener {
 
@@ -180,7 +84,6 @@ public class SpeechRecognizerManager {
         @Override
         public void onError(int error) {
             Log.e(TAG, "onError:" + error);
-            mPocketSphinxRecognizer.startListening(KWS_SEARCH);
         }
 
         @Override
@@ -201,7 +104,6 @@ public class SpeechRecognizerManager {
                     mOnResultListener.OnResult(heard);
                 }
             }
-            mPocketSphinxRecognizer.startListening(KWS_SEARCH);
         }
 
         @Override
@@ -216,6 +118,22 @@ public class SpeechRecognizerManager {
     public interface OnResultListener
     {
         public void OnResult(ArrayList<String> commands);
+    }
+
+    //********SENSOR METHODS
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        Log.d("Google VOICE", event.values[0]+"");
+        if (event.sensor.getType() == Sensor.TYPE_HEADSET_TAP) {
+            if (event.values[0] == TAPPED) {
+                Log.d("Google VOICE", event.values[0]+"");
+                mGoogleSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
 }
