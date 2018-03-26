@@ -4,12 +4,12 @@ xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:orientation="horizontal"
-android:background="#0099cc"
 tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
 
 <!-- This FrameLayout insets its children based on system windows using
      android:fitsSystemWindows. -->
 
+    <!-- T
     <TextView
         android:id="@+id/mfseq_wsmd"
         android:layout_height="wrap_content"
@@ -18,8 +18,10 @@ tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
         android:text="WSMD SELECCIONADA"
         android:keepScreenOn="true"
         android:layout_gravity="top" />
+        -->
 
 <FrameLayout
+    android:id="@+id/selection_content_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -29,12 +31,14 @@ tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:background="@color/black_overlay"
         android:orientation="horizontal"
         tools:ignore="UselessParent">
 
         <ListView
             android:id="@+id/list"
+            android:divider="@color/smart_background"
+            android:background="@color/smartTransparent"
+            android:dividerHeight="1dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
         </ListView>

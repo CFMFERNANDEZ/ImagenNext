@@ -13,12 +13,16 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,21 +35,66 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView;
 public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener {
 
     private ImageView mImageView;
+    private View mContentView;
+    private ListView listViewComponent;
     private int mImageIndex;
     private MfseqOrder order;
     private SpeechRecognizerManager mSpeechRecognizerManager;
+    private AlertDialog alertComponent;
+    private View alertView;
+    private ArrayList<Component> components;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_screen);
 
+        mContentView = findViewById(R.id.oms_image);
+        setImmersive();
 
         order = (MfseqOrder)getIntent().getSerializableExtra("order");
         mSpeechRecognizerManager = new SpeechRecognizerManager(this);
         mSpeechRecognizerManager.setOnResultListner(this);
         mImageView = (ImageView) findViewById(R.id.oms_image);
-        Toast.makeText(this, order.getAsmDscr(), Toast.LENGTH_LONG).show();
+
+        /**
+         * ALERT CONSTRUCTOR
+         * */
+        components = new ArrayList();
+        components.add(new Component("00-001", "Component 1", 1, ""));
+        components.add(new Component("00-002", "Component 2", 2, ""));
+        components.add(new Component("00-003", "Component 3", 3, ""));
+        components.add(new Component("00-004", "Component 4", 2, ""));
+        components.add(new Component("00-005", "Component 5", 1, ""));
+        components.add(new Component("00-006", "Component 6", 2, ""));
+
+        ComponentListAdapter adapterList = new ComponentListAdapter(this, components);
+        AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        alertView = inflater.inflate(R.layout.component_alert_layout, null);
+        listViewComponent = (ListView)alertView.findViewById(R.id.componente_list);
+        listViewComponent.setAdapter(adapterList);
+        builder.setView(alertView);
+        builder.setTitle("Log in");
+        builder.setIcon(R.drawable.i7938);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        builder.setCancelable(false);
+        alertComponent = builder.create();
+
+    }
+
+    public void setImmersive(){
+        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
     @Override
@@ -73,12 +122,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     }
                 }
             }else if (command.toLowerCase().contains("next")){
-                Log.d("ON NEXT", "ON NEXT");
                 mImageIndex++;
                 changeImage();
             }else  if (command.toLowerCase().contains("back") || command.toLowerCase().contains("previuos")){
-                Log.d("ON BACK", "ON BACK");
-
                 mImageIndex--;
                 changeImage();
             }
@@ -109,6 +155,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     mImageIndex++;
                     changeImage();
                     break;
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
+                    mSpeechRecognizerManager.setOnResultListner(this);
+                    break;
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    alertComponent.show();
+                    break;
                 default:
                     break;
             }
@@ -120,8 +173,27 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private void changeImage() {
         Log.d("ON CHANGE IMAGE", mImageIndex+"");
         if (order.getOMSSize() <= mImageIndex) {
-            mImageIndex = 0;
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("Your Title");
+            alertDialogBuilder.setMessage("Click yes to exit!").setCancelable(false)
+                    .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            Toast.makeText(getApplicationContext(), "You have finish this production", Toast.LENGTH_LONG).show();
+                            mImageIndex = 0;
+                            setImmersive();
+                        }
+                    })
+                    .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            mImageIndex = 0;
+                            dialog.cancel();
+                        }
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            alertDialog.show();
         } else if (mImageIndex < 0) {
+            Toast.makeText(getApplicationContext(), "You ARE IN THE BEGINING OF THE oms", Toast.LENGTH_LONG).show();
             mImageIndex = order.getOMSSize() - 1;
         }
         setImage(mImageIndex);

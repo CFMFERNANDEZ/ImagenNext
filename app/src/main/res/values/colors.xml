@@ -4,4 +4,15 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="black_overlay">#66000000</color>
+
+    <color name="smartPrimary">#3F51B5</color>
+    <color name="smartPrimaryDark">#303F9F</color>
+    <color name="smartAccent">#FF4081</color>
+    <color name="smart_overlay">#66000000</color>
+
+    <color name="smart_background">#000000</color>
+    <color name="smart_text">#cecece</color>
+
+    <color name="smartTransparent">#38d6d6d6</color>
+    <color name="transparent">#0a494949</color>
 </resources>

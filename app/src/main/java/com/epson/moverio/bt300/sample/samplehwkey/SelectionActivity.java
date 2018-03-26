@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -31,7 +32,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
      * * * * */
     private static final int ALL_PERMISSION = 1;
 
-    private View mControlsView;
+    private View mContentView;
     private ListView listView;
     private TextView wsmdText;
     private static final String TAG = "MyStt3Activity";
@@ -46,10 +47,19 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection);
+        //Immersive mode
+        mContentView = findViewById(R.id.selection_content_view);
+        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
         //HERE WE READ THE VALUE SENDED PREVIUSLY
         String WSMD  = getIntent().getStringExtra("WMSD");
-        wsmdText = (TextView)findViewById(R.id.mfseq_wsmd);
-        wsmdText.setText(WSMD);
+//        wsmdText = (TextView)findViewById(R.id.mfseq_wsmd);
+//        wsmdText.setText(WSMD);
         Toast.makeText(getApplicationContext(), WSMD, Toast.LENGTH_LONG).show();
 
 
@@ -62,7 +72,6 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         values.add(new MfseqOrder(6,"HP-TINT-954XL", "Tint for HP printer", "889296895213", "DPF385-001", "process"));
 
         MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);
-        Log.d("Context adapter",this.toString());
         listView = (ListView) findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -70,10 +79,13 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 MfseqOrder item = (MfseqOrder) listView.getAdapter().getItem(position);
                 Toast.makeText(getApplicationContext(), item.getAsmDscr() + " selected", Toast.LENGTH_LONG).show();
+                Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
+                orderIntent.putExtra("order", item);
+                startActivity(orderIntent);
             }
         });
-        mSpeechRecognizerManager = new SpeechRecognizerManager(this);
-        mSpeechRecognizerManager.setOnResultListner(this);
+//        mSpeechRecognizerManager = new SpeechRecognizerManager(this);
+//        mSpeechRecognizerManager.setOnResultListner(this);
 
 //        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 //        if (currentapiVersion >= android.os.Build.VERSION_CODES.M) {
@@ -132,6 +144,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         MfseqOrder odertoSend= null;
         for(String command:commands)
         {
+            Log.d("On googleRecResult", command);
             if (command.toLowerCase().contains("open")){
                 if( command.toLowerCase().contains("order") || command.toLowerCase().contains("orden")){
                     String order = "";
@@ -198,5 +211,24 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         if( mScannerView != null ){
             mScannerView.stopCamera();
         }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
+                    mSpeechRecognizerManager.setOnResultListner(this);
+                    break;
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    Toast.makeText(getApplicationContext(), "Comand not valid", Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return super.dispatchKeyEvent(event);
     }
 }

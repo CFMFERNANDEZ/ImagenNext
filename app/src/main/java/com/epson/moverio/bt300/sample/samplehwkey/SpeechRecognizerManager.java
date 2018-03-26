@@ -9,7 +9,12 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
+
+import com.epson.moverio.btcontrol.DisplayControl;
+
 import java.util.ArrayList;
+
+import static android.content.Context.SENSOR_SERVICE;
 
 
 /**
@@ -21,6 +26,7 @@ public class SpeechRecognizerManager implements SensorEventListener {
     /*SENSOR CONSTANTS*/
     private final int TAPPED = 2;
     private SensorManager mSensorManager;
+    private DisplayControl mDisplayControl;
 
     /* Named searches allow to quickly reconfigure the decoder */
     private static final String KWS_SEARCH = "wakeup";
@@ -35,8 +41,24 @@ public class SpeechRecognizerManager implements SensorEventListener {
     public SpeechRecognizerManager(Context context) {
         this.mContext = context;
         initGoogleSpeechRecognizer();
+//        mSensorManager = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
+//        if (mSensorManager != null) {
+//            Sensor tap = mSensorManager.getDefaultSensor(Sensor.TYPE_HEADSET_TAP);
+//            mSensorManager.registerListener(this, tap, SensorManager.SENSOR_DELAY_NORMAL);
+//        }
     }
 
+    public SpeechRecognizerManager(Context context, boolean autoStart) {
+        this(context);
+        if(autoStart){
+            mGoogleSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+        }
+//        mSensorManager = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
+//        if (mSensorManager != null) {
+//            Sensor tap = mSensorManager.getDefaultSensor(Sensor.TYPE_HEADSET_TAP);
+//            mSensorManager.registerListener(this, tap, SensorManager.SENSOR_DELAY_NORMAL);
+//        }
+    }
     private void initGoogleSpeechRecognizer() {
         mGoogleSpeechRecognizer = android.speech.SpeechRecognizer.createSpeechRecognizer(mContext);
         mGoogleSpeechRecognizer.setRecognitionListener(new GoogleRecognitionListener());
@@ -123,7 +145,6 @@ public class SpeechRecognizerManager implements SensorEventListener {
     //********SENSOR METHODS
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.d("Google VOICE", event.values[0]+"");
         if (event.sensor.getType() == Sensor.TYPE_HEADSET_TAP) {
             if (event.values[0] == TAPPED) {
                 Log.d("Google VOICE", event.values[0]+"");

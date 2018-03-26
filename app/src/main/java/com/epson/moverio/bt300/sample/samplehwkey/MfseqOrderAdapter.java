@@ -43,7 +43,7 @@ public class MfseqOrderAdapter extends ArrayAdapter<MfseqOrder> {
     public View getView(int i, View view, ViewGroup parent) {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.mfseqorderlist, parent, false);
+        View rowView = inflater.inflate(R.layout.mfseqorder_list, parent, false);
 
         asmDscr = (TextView) rowView.findViewById(R.id.mfseq_asmdscr);
         asmCode = (TextView) rowView.findViewById(R.id.mfseq_asmcode);
