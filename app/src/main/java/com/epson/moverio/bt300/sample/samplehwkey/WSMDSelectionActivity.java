@@ -244,7 +244,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         if( !personnelLoaded){
             for(Personnel person : personnels){
                 if( person.getCode().equalsIgnoreCase(rawResult.getText())){
-                    int id = getResources().getIdentifier(person.getPhoto()+".jpg", "drawable", getPackageName());
+                    int id = getResources().getIdentifier(person.getPhoto(), "drawable", getPackageName());
                     Log.d("ID SOURCE", id +"");
                     personnelPhoto = (ImageView)mContentView.findViewById(R.id.personnel_image);
                     personnelName = (TextView)findViewById(R.id.personnel_name);
@@ -261,8 +261,8 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             if(!personnelLoaded){
                 Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
             }
-        }
-        if( !wsLoaded && personnelLoaded){
+        }else if( !wsLoaded && personnelLoaded){
+            Toast.makeText(getApplicationContext(), "Reading WS", Toast.LENGTH_LONG).show();
             switch ( rawResult.getText()){
                 case "895221030116":
                     orderIntent = new Intent(this, SelectionActivity.class);

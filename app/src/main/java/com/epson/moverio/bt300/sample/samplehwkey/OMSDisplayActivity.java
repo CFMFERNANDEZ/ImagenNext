@@ -175,6 +175,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
                     break;
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    alertComponent.show();
+                    break;
                 default:
                     break;
             }
