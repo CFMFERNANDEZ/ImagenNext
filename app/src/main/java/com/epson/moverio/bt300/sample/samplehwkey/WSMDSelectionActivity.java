@@ -11,12 +11,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.Result;
+
+import java.util.ArrayList;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
@@ -104,15 +109,22 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
      private ZXingScannerView mScannerView;
      private static final int ALL_PERMISSION = 1;
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
-     private EditText textField;
+     private boolean personnelLoaded = false;
+     private boolean wsLoaded = false;
+    ArrayList<Personnel> personnels = new ArrayList();
+
+    private ImageView personnelPhoto;
+    private TextView personnelName;
+    private TextView personnelCode;
+    private TextView message;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wsmdselection);
         mVisible = true;
-        mControlsView = findViewById(R.id.wsmdfullscreen_content_controls);
-        mContentView = findViewById(R.id.wsmd_wellcome);
+        mControlsView = findViewById(R.id.personnel_sublayout);
+        mContentView = findViewById(R.id.personnel_sublayout);
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,12 +139,15 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                 ActivityCompat.requestPermissions(this, PERMISSIONS, ALL_PERMISSION);
             }
         }
+        /*
+        *   OUR CODE
+        * */
+        personnels.add( new Personnel("Jacqueline", "Bordeau", "DE-4009", "bordeau", "202736"));
+        personnels.add( new Personnel("Eliezer", "Beltran", "CF-0931", "obeltran", "987868678"));
+        personnels.add( new Personnel("Max", "Kingsley", "DE-6658", "mkingsley", "546567456"));
+
         QrScanner();
 
-    }
-
-    public void launchScaner(View view){
-        QrScanner();
     }
 
     public void QrScanner(){
@@ -207,31 +222,68 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                    QrScanner();
+                    break;
+                default:
+                    break;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
 
     public void handleResult(Result rawResult) {
         mScannerView.stopCamera();
         setContentView(R.layout.activity_wsmdselection);
         Intent orderIntent;
-        Log.d("WSMD SELECTION", rawResult.getText());
-        switch ( rawResult.getText()){
-            case "895221030116":
-                orderIntent = new Intent(this, SelectionActivity.class);
-                orderIntent.putExtra("WMSD", rawResult.getText());
-                startActivity(orderIntent);
-                break;
-            case "889296895213":
-                orderIntent = new Intent(this, SelectionActivity.class);
-                orderIntent.putExtra("WMSD", rawResult.getText());
-                startActivity(orderIntent);
-                break;
-            case "889296895176":
-                orderIntent = new Intent(this, SelectionActivity.class);
-                orderIntent.putExtra("WMSD", rawResult.getText());
-                startActivity(orderIntent);
-                break;
-            default:
-                Toast.makeText(getApplicationContext(), "WSMD not valid", Toast.LENGTH_LONG).show();
+        if( !personnelLoaded){
+            for(Personnel person : personnels){
+                if( person.getCode().equalsIgnoreCase(rawResult.getText())){
+                    int id = getResources().getIdentifier(person.getPhoto()+".jpg", "drawable", getPackageName());
+                    Log.d("ID SOURCE", id +"");
+                    personnelPhoto = (ImageView)mContentView.findViewById(R.id.personnel_image);
+                    personnelName = (TextView)findViewById(R.id.personnel_name);
+                    personnelCode = (TextView)findViewById(R.id.personnel_code);
+                    message = (TextView)findViewById(R.id.wsmd_message);
+
+                    personnelPhoto.setImageResource(id);
+                    personnelName.setText(person.getlName()+" "+person.getfName());
+                    personnelCode.setText(person.getUserCode());
+                    message.setText("Press Right button for scan your WS");
+                    personnelLoaded = true;
+                }
+            }
+            if(!personnelLoaded){
+                Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
+            }
+        }
+        if( !wsLoaded && personnelLoaded){
+            switch ( rawResult.getText()){
+                case "895221030116":
+                    orderIntent = new Intent(this, SelectionActivity.class);
+                    orderIntent.putExtra("WMSD", rawResult.getText());
+                    startActivity(orderIntent);
                     break;
+                case "889296895213":
+                    orderIntent = new Intent(this, SelectionActivity.class);
+                    orderIntent.putExtra("WMSD", rawResult.getText());
+                    startActivity(orderIntent);
+                    break;
+                case "889296895176":
+                    orderIntent = new Intent(this, SelectionActivity.class);
+                    orderIntent.putExtra("WMSD", rawResult.getText());
+                    startActivity(orderIntent);
+                    break;
+                default:
+                    Toast.makeText(getApplicationContext(), "WSMD not valid", Toast.LENGTH_LONG).show();
+                    break;
+            }
+            wsLoaded = true;
         }
     }
 }

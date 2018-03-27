@@ -17,7 +17,6 @@
             <ListView
                 android:id="@+id/componente_list"
                 android:divider="@color/smart_background"
-                android:background="@color/smartTransparent"
                 android:dividerHeight="1dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >

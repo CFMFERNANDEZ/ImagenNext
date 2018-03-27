@@ -44,7 +44,6 @@ public class ComponentListAdapter extends ArrayAdapter<Component>{
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.component_list, parent, false);
-        Log.d("ComponentAdapter", components.get(i).getCode());
         componentCode = (TextView) rowView.findViewById(R.id.component_code);
         componentDscr = (TextView)rowView.findViewById(R.id.component_dscr);
         componentQuantity = (TextView)rowView.findViewById(R.id.component_quantity);

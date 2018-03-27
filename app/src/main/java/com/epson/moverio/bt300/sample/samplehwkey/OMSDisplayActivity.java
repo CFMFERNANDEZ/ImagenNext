@@ -37,12 +37,16 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private ImageView mImageView;
     private View mContentView;
     private ListView listViewComponent;
+    private ListView listViewMetric;
     private int mImageIndex;
     private MfseqOrder order;
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private AlertDialog alertComponent;
-    private View alertView;
+    private AlertDialog alertMetric;
+    private View componentView;
+    private View metricView;
     private ArrayList<Component> components;
+    private ArrayList<Metric> metrics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +75,11 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         ComponentListAdapter adapterList = new ComponentListAdapter(this, components);
         AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-        alertView = inflater.inflate(R.layout.component_alert_layout, null);
-        listViewComponent = (ListView)alertView.findViewById(R.id.componente_list);
+        componentView = inflater.inflate(R.layout.component_alert_layout, null);
+        listViewComponent = (ListView)componentView.findViewById(R.id.componente_list);
         listViewComponent.setAdapter(adapterList);
-        builder.setView(alertView);
-        builder.setTitle("Log in");
+        builder.setView(componentView);
+        builder.setTitle("Component list");
         builder.setIcon(R.drawable.i7938);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -85,6 +89,32 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         });
         builder.setCancelable(false);
         alertComponent = builder.create();
+
+        /*ALERT METRICS*/
+        metrics = new ArrayList();
+        metrics.add(new Metric("radio", 15, 0));
+        metrics.add(new Metric("resistance", 0.5, 0));
+        metrics.add(new Metric("tolerance", 1, 0));
+        metrics.add(new Metric("height", 5, 0));
+
+
+        MetricListAdapter metricAdapter = new MetricListAdapter(this, metrics);
+        AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
+        metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);
+        listViewMetric = (ListView)metricView.findViewById(R.id.metrics_list);
+        listViewMetric.setAdapter(metricAdapter);
+        metricBuilder.setView(metricView);
+        metricBuilder.setTitle("Metric list");
+        metricBuilder.setIcon(R.drawable.i7938);
+        metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        metricBuilder.setCancelable(false);
+        alertMetric = metricBuilder.create();
 
     }
 
@@ -101,25 +131,11 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     public void OnResult(ArrayList<String> commands) {
         for(String command:commands)
         {
-            Log.d("ON OMS DISPLAY", command);
-            if (command.toLowerCase().contains("show")){
-                if (command.toLowerCase().contains("me") && command.toLowerCase().contains("OMS")){
-                    if( command.toLowerCase().contains("cero") ){
-                        mImageIndex = 0;
-                        changeImage();
-                    }else if( command.toLowerCase().contains("one") ){
-                        mImageIndex = 1;
-                        changeImage();
-                    }else if( command.toLowerCase().contains("two") ||command.toLowerCase().contains("to")){
-                        mImageIndex = 2;
-                        changeImage();
-                    }else if( command.toLowerCase().contains("three") ||command.toLowerCase().contains("tree")){
-                        mImageIndex = 3;
-                        changeImage();
-                    }else if( command.toLowerCase().contains("four") ){
-                        mImageIndex = 4;
-                        changeImage();
-                    }
+            if (command.toLowerCase().contains("open") || command.toLowerCase().contains("show") ){
+                if (command.toLowerCase().contains("metric")){
+                    alertMetric.show();
+                }else if(command.toLowerCase().contains("component")){
+                    alertComponent.show();
                 }
             }else if (command.toLowerCase().contains("next")){
                 mImageIndex++;
@@ -158,9 +174,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
-                    break;
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    alertComponent.show();
                     break;
                 default:
                     break;

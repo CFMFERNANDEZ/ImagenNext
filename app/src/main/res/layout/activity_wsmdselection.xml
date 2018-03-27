@@ -1,12 +1,24 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0099cc"
     tools:context="com.epson.moverio.bt300.sample.samplehwkey.WSMDSelectionActivity">
 
-    <FrameLayout
-        android:id="@+id/wsmdfullscreen_content_controls"
+    <RelativeLayout
+        android:id="@+id/personnel_sublayout"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="0.6">
+
+        <ImageView
+            android:id="@+id/personnel_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+    </RelativeLayout>
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/black_overlay"
@@ -14,23 +26,25 @@
         tools:ignore="UselessParent">
 
         <TextView
-            android:id="@+id/wsmd_wellcome"
+            android:id="@+id/personnel_name"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:text="@string/wellcome_msg"
-            android:gravity="top"
-            android:textSize="30sp"
-            android:layout_gravity="top" />
+            android:textSize="30sp"/>
 
-        <Button
-            android:id="@+id/wsmd_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="bottom"
-            android:text="Scann WSMD"
-            android:textStyle="bold"
-            android:onClick="launchScaner"/>
+        <TextView
+            android:id="@+id/personnel_code"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textSize="30sp"/>
 
-    </FrameLayout>
+        <TextView
+            android:id="@+id/wsmd_message"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text=""
+            android:textSize="30sp" />
 
-</FrameLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

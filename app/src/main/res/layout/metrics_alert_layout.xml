@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="horizontal"
-tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
-
-
-<FrameLayout
-    android:id="@+id/selection_content_view"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:orientation="horizontal">
+
     <LinearLayout
-        android:id="@+id/fullscreen_content_controls"
+        android:id="@+id/metrics_fullscreen_content"
         style="?metaButtonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,15 +15,13 @@ tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
         tools:ignore="UselessParent">
 
         <ListView
-            android:id="@+id/list"
+            android:id="@+id/metrics_list"
             android:divider="@color/smart_background"
-            android:background="@color/smartTransparent"
             android:dividerHeight="1dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
         </ListView>
 
     </LinearLayout>
-</FrameLayout>
 
 </FrameLayout>
