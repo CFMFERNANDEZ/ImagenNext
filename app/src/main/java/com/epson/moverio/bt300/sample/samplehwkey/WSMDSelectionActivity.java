@@ -244,22 +244,21 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         if( !personnelLoaded){
             for(Personnel person : personnels){
                 if( person.getCode().equalsIgnoreCase(rawResult.getText())){
-                    int id = getResources().getIdentifier(person.getPhoto(), "drawable", getPackageName());
-                    Log.d("ID SOURCE", id +"");
-                    personnelPhoto = (ImageView)mContentView.findViewById(R.id.personnel_image);
+                    int id = getApplicationContext().getResources().getIdentifier("drawable/"+person.getPhoto(), null, getPackageName());
+                    personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
                     personnelName = (TextView)findViewById(R.id.personnel_name);
                     personnelCode = (TextView)findViewById(R.id.personnel_code);
                     message = (TextView)findViewById(R.id.wsmd_message);
 
                     personnelPhoto.setImageResource(id);
-                    personnelName.setText(person.getlName()+" "+person.getfName());
+                    personnelName.setText(person.getfName()+" "+person.getlName());
                     personnelCode.setText(person.getUserCode());
                     message.setText("Press Right button for scan your WS");
                     personnelLoaded = true;
                 }
             }
             if(!personnelLoaded){
-                Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), rawResult.getText(), Toast.LENGTH_LONG).show();
             }
         }else if( !wsLoaded && personnelLoaded){
             Toast.makeText(getApplicationContext(), "Reading WS", Toast.LENGTH_LONG).show();

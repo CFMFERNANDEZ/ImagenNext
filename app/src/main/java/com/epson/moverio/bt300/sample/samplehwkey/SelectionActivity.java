@@ -40,6 +40,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private static final int CAMERA_PIC_REQUEST = 1337;
     ArrayList<MfseqOrder> values = new ArrayList();
     private boolean mVisible;
+    private String orderInAction;
     private ZXingScannerView mScannerView;
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
 
@@ -81,6 +82,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 Toast.makeText(getApplicationContext(), item.getAsmDscr() + " selected", Toast.LENGTH_LONG).show();
                 Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
                 orderIntent.putExtra("order", item);
+                orderInAction = "Estoy en Selection";
                 startActivity(orderIntent);
             }
         });
@@ -132,11 +134,13 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     @Override
     protected void onResume() {
+        Log.d("ON RESUME", "On RESUME" );
         super.onResume();
         if(mSpeechRecognizerManager != null ) {
             mSpeechRecognizerManager = new SpeechRecognizerManager(this);
             mSpeechRecognizerManager.setOnResultListner(this);
         }
+
     }
 
     @Override

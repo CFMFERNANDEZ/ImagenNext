@@ -145,12 +145,7 @@ public class SpeechRecognizerManager implements SensorEventListener {
     //********SENSOR METHODS
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_HEADSET_TAP) {
-            if (event.values[0] == TAPPED) {
-                Log.d("Google VOICE", event.values[0]+"");
-                mGoogleSpeechRecognizer.startListening(mSpeechRecognizerIntent);
-            }
-        }
+
     }
 
     @Override

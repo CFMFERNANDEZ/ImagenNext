@@ -43,8 +43,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private AlertDialog alertComponent;
     private AlertDialog alertMetric;
+    private AlertDialog tpcDialog;
     private View componentView;
     private View metricView;
+    private View tpcView;
     private ArrayList<Component> components;
     private ArrayList<Metric> metrics;
 
@@ -115,7 +117,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         });
         metricBuilder.setCancelable(false);
         alertMetric = metricBuilder.create();
-
     }
 
     public void setImmersive(){
@@ -143,6 +144,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             }else  if (command.toLowerCase().contains("back") || command.toLowerCase().contains("previuos")){
                 mImageIndex--;
                 changeImage();
+            }else  if (command.toLowerCase().contains("confirm") || command.toLowerCase().contains("PC") ||
+                    command.toLowerCase().contains("end") || command.toLowerCase().contains("pipc")){
+                tpcDialog.dismiss();
+                super.finish();
             }
         }
     }
@@ -182,34 +187,54 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     break;
             }
         }
-
         return super.dispatchKeyEvent(event);
     }
 
     private void changeImage() {
         Log.d("ON CHANGE IMAGE", mImageIndex+"");
         if (order.getOMSSize() <= mImageIndex) {
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setTitle("Your Title");
-            alertDialogBuilder.setMessage("Click yes to exit!").setCancelable(false)
-                    .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
-                            Toast.makeText(getApplicationContext(), "You have finish this production", Toast.LENGTH_LONG).show();
-                            mImageIndex = 0;
-                            setImmersive();
-                        }
-                    })
-                    .setNegativeButton("No",new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
-                            mImageIndex = 0;
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alertDialog = alertDialogBuilder.create();
 
-            alertDialog.show();
+            /*TPC DIALOG*/
+            AlertDialog.Builder tpcBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
+            LayoutInflater tpcInflater = LayoutInflater.from(getApplicationContext());
+            tpcView = tpcInflater.inflate(R.layout.tpc_alert_layout, null);
+            ImageView tpcIcon = (ImageView)tpcView.findViewById(R.id.tpc_image);
+            tpcIcon.setImageResource(R.drawable.tpcicon);
+            TextView tpcCode = (TextView)tpcView.findViewById(R.id.tpc_ordercode);
+            tpcCode.setText(order.getAsmCode());
+            TextView tpcDscr = (TextView)tpcView.findViewById(R.id.tpc_orderdscr);
+            tpcDscr.setText(order.getAsmDscr());
+            TextView tpcMessage = (TextView)tpcView.findViewById(R.id.tpc_message);
+            tpcMessage.setText("Confirm your TPC.");
+            tpcBuilder.setView(tpcView);
+            tpcBuilder.setTitle("TPC Confirmation.");
+            tpcBuilder.setIcon(R.drawable.ok);
+            tpcBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    setImmersive();
+                }
+            });
+            tpcBuilder.setCancelable(false);
+            tpcDialog = tpcBuilder.create();
+            tpcDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                        switch (event.getKeyCode()) {
+                            case KeyEvent.KEYCODE_DPAD_UP:
+                                mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
+                                mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    return false;
+                }
+            });
+            tpcDialog.show();
         } else if (mImageIndex < 0) {
-            Toast.makeText(getApplicationContext(), "You ARE IN THE BEGINING OF THE oms", Toast.LENGTH_LONG).show();
             mImageIndex = order.getOMSSize() - 1;
         }
         setImage(mImageIndex);
@@ -220,5 +245,11 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             mImageView.setImageResource(order.getImage(index));
             mImageIndex = index;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSpeechRecognizerManager.destroy();
     }
 }
