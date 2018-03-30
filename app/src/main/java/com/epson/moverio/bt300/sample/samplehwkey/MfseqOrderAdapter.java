@@ -7,16 +7,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by CellFusion on 3/20/2018.
  */
 
-public class MfseqOrderAdapter extends ArrayAdapter<MfseqOrder> {
-    private ArrayList<MfseqOrder> mfseqOrders;
+public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
+    private ArrayList<OrdersModel> mfseqOrders;
     private Context context;
     private TextView asmDscr;
     private TextView asmCode;
@@ -24,7 +26,7 @@ public class MfseqOrderAdapter extends ArrayAdapter<MfseqOrder> {
     private TextView lotSerial;
     private ImageView status;
 
-    public MfseqOrderAdapter(Context context, ArrayList<MfseqOrder> mfseqOrders ){
+    public MfseqOrderAdapter(Context context, ArrayList<OrdersModel> mfseqOrders ){
         super(context, -1, mfseqOrders);
         this.mfseqOrders = mfseqOrders;
         this.context = context;
@@ -51,10 +53,10 @@ public class MfseqOrderAdapter extends ArrayAdapter<MfseqOrder> {
         lotSerial = (TextView) rowView.findViewById(R.id.mfseq_serialn);
 //        status = (ImageView) rowView.findViewById(R.id.mfseq_status);
 
-        asmDscr.setText(mfseqOrders.get(i).getAsmDscr());
-        asmCode.setText(mfseqOrders.get(i).getAsmCode());
-        flowId.setText(mfseqOrders.get(i).getFlowId());
-        lotSerial.setText(mfseqOrders.get(i).getLotSerial());
+        asmDscr.setText(mfseqOrders.get(i).getAsm_dscr());
+        asmCode.setText(mfseqOrders.get(i).getAsm_code());
+        flowId.setText(mfseqOrders.get(i).getId());
+        lotSerial.setText(mfseqOrders.get(i).getLotno());
 
 //        String s = mfseqOrders.get(i).getStatus();
 //        if (s.contains("closed")) {

@@ -39,7 +39,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private ListView listViewComponent;
     private ListView listViewMetric;
     private int mImageIndex;
-    private MfseqOrder order;
+    private OrdersModel order;
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private AlertDialog alertComponent;
     private AlertDialog alertMetric;
@@ -58,7 +58,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
 
-        order = (MfseqOrder)getIntent().getSerializableExtra("order");
+        order = (OrdersModel)getIntent().getSerializableExtra("order");
         mSpeechRecognizerManager = new SpeechRecognizerManager(this);
         mSpeechRecognizerManager.setOnResultListner(this);
         mImageView = (ImageView) findViewById(R.id.oms_image);

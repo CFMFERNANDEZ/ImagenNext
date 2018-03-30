@@ -4,41 +4,40 @@ package com.epson.moverio.bt300.sample.samplehwkey;
  * Created by CellFusion on 3/27/2018.
  */
 
+
 public class Personnel {
 
-    private String fName;
-    private String lName;
-    private String code;
-    private String userCode;
-    private String photo;
+    private String c_fname;
+    private String c_lname;
+    private String c_code;
 
-    public Personnel(String fname, String lname, String userCode, String photo, String code){
-        this.fName = fname;
-        this.lName = lname;
-        this.userCode = userCode;
-        this.photo = photo;
-        this.code = code;
+    public Personnel(String code,String fname, String lname){
+        this.c_fname = fname;
+        this.c_lname = lname;
+        this.c_code = code;
     }
 
-    public String getfName(){
-        return this.fName;
+    public String getC_fname() {
+        return c_fname;
     }
 
-    public String getlName(){
-        return this.lName;
+    public void setC_fname(String c_fname) {
+        this.c_fname = c_fname;
     }
 
-    public String getUserCode(){
-        return this.userCode;
+    public String getC_lname() {
+        return c_lname;
     }
 
-    public String getCode(){
-        return this.code;
+    public void setC_lname(String c_lname) {
+        this.c_lname = c_lname;
     }
 
-    public String getPhoto(){
-        return this.photo;
+    public String getC_code() {
+        return c_code;
     }
 
-
+    public void setC_code(String c_code) {
+        this.c_code = c_code;
+    }
 }
