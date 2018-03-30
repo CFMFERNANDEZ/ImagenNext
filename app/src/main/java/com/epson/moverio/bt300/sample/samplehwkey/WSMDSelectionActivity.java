@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +15,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +22,16 @@ import android.widget.Toast;
 import com.google.zxing.Result;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import okhttp3.OkHttpClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -48,7 +56,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
      */
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
-    private View mContentView;
+    private static View mContentView;
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -111,12 +119,18 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
      private boolean personnelLoaded = false;
      private boolean wsLoaded = false;
-    ArrayList<Personnel> personnels = new ArrayList();
+    //ArrayList<Personnel> personnels = new ArrayList();    //Works offline
+    public static ArrayList<Personnel> PERSONNELS = new ArrayList();      //New List
+    public static ArrayList<OrdersModel> orders = new ArrayList();
+    public static String ID;
+    public static Intent orderIntent;
 
-    private ImageView personnelPhoto;
-    private TextView personnelName;
-    private TextView personnelCode;
-    private TextView message;
+    private static ImageView personnelPhoto;
+    private static TextView personnelName;
+    private static TextView personnelCode;
+    private static TextView message;
+
+    private APIService mAPIService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,13 +156,107 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         /*
         *   OUR CODE
         * */
-        personnels.add( new Personnel("Jacqueline", "Bordeau", "DE-4009", "bordeau", "202736"));
-        personnels.add( new Personnel("Eliezer", "Beltran", "CF-0931", "obeltran", "987868678"));
-        personnels.add( new Personnel("Max", "Kingsley", "DE-6658", "mkingsley", "546567456"));
 
+        /*PERSONNELS.add( new Personnel("DE-4009","Jacqueline", "Bordeau"));
+        PERSONNELS.add( new Personnel("CF-0931","Eliezer", "Beltran"));
+        PERSONNELS.add( new Personnel("DE-6658","Max", "Kingsley"));*/
+
+        //new loadJSON().execute();
         QrScanner();
 
     }
+
+    public class login extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids){
+            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            APIService apiService = retrofit.create(APIService.class);
+            Call<List<Personnel>> person = apiService.getUsersByCode(ID);  //Return one record searching by CODE
+
+            person.enqueue(new Callback<List<Personnel>>() {
+                @Override
+                public void onResponse(Call<List<Personnel>> call, Response<List<Personnel>> response) {
+                    if(response.isSuccessful()&& response.body().size() > 0) {
+                        Personnel p = response.body().get(0);
+
+                        personnelPhoto = (ImageView)mContentView.findViewById(R.id.personnel_image);
+                        personnelName = (TextView)findViewById(R.id.personnel_name);
+                        personnelCode = (TextView)findViewById(R.id.personnel_code);
+                        message = (TextView)findViewById(R.id.wsmd_message);
+
+
+                        personnelName.setText(p.getC_lname()+" "+p.getC_fname());
+                        //personnelCode.setText(person.getUserCode());
+                        message.setText("Press Left button for scan your WS");
+                        personnelLoaded = true;
+
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Personnel>> call, Throwable t) {
+                    Log.e("ERROR", t.toString());
+                }
+            });
+            return null;
+        }
+    }
+
+    public class wsmgSelection extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids){
+            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            APIService apiService = retrofit.create(APIService.class);
+            Call<List<OrdersModel>> orders = apiService.getOrdersByWSMD(ID);  //Return one record searching by CODE
+
+            orders.enqueue(new Callback<List<OrdersModel>>() {
+                @Override
+                public void onResponse(Call<List<OrdersModel>> call, Response<List<OrdersModel>> response) {
+                    if(response.isSuccessful()&& response.body().size() > 0) {
+                        List<OrdersModel> auxList = new ArrayList();
+                        int i = 0;
+                        for( OrdersModel order : response.body()){
+                            auxList.add(response.body().get(i));
+                            i++;
+                         }
+                        orderIntent = new Intent(getBaseContext(),SelectionActivity.class);
+                        orderIntent.putExtra("WMSD", ID);
+                        orderIntent.putExtra("Orders",new OrdersModelList(auxList) );
+                        startActivity(orderIntent);
+
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Workstation error", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<OrdersModel>> call, Throwable t) {
+                    Log.e("ERROR", t.toString());
+                }
+            });
+            return null;
+        }
+    }
+
+    public static OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .readTimeout(1200, TimeUnit.SECONDS)
+            .connectTimeout(1200, TimeUnit.SECONDS)
+            .build();
 
     public void QrScanner(){
         Log.d("Context QR",this.toString());
@@ -238,32 +346,36 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
 
 
     public void handleResult(Result rawResult) {
+        ID = rawResult.getText();
         mScannerView.stopCamera();
         setContentView(R.layout.activity_wsmdselection);
-        Intent orderIntent;
+//        Intent orderIntent;
         if( !personnelLoaded){
-            for(Personnel person : personnels){
-                if( person.getCode().equalsIgnoreCase(rawResult.getText())){
-                    int id = getResources().getIdentifier(person.getPhoto(), "drawable", getPackageName());
-                    Log.d("ID SOURCE", id +"");
+            new login().execute();
+            /*for(Personnel person : PERSONNELS){
+                Log.d("ID PERSON", person.getC_code()+"");
+                if( person.getC_code().equalsIgnoreCase(rawResult.getText())){
+                    //int id = getResources().getIdentifier(person.getPhoto(), "drawable", getPackageName());
+                    //Log.d("ID SOURCE", id +"");
                     personnelPhoto = (ImageView)mContentView.findViewById(R.id.personnel_image);
                     personnelName = (TextView)findViewById(R.id.personnel_name);
                     personnelCode = (TextView)findViewById(R.id.personnel_code);
                     message = (TextView)findViewById(R.id.wsmd_message);
 
-                    personnelPhoto.setImageResource(id);
-                    personnelName.setText(person.getlName()+" "+person.getfName());
-                    personnelCode.setText(person.getUserCode());
+                    //personnelPhoto.setImageResource(id);
+                    personnelName.setText(person.getC_lname()+" "+person.getC_fname());
+                    //personnelCode.setText(person.getUserCode());
                     message.setText("Press Right button for scan your WS");
                     personnelLoaded = true;
                 }
             }
             if(!personnelLoaded){
                 Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
-            }
+            }*/
         }else if( !wsLoaded && personnelLoaded){
+            new wsmgSelection().execute();
             Toast.makeText(getApplicationContext(), "Reading WS", Toast.LENGTH_LONG).show();
-            switch ( rawResult.getText()){
+           /* switch ( rawResult.getText()){
                 case "895221030116":
                     orderIntent = new Intent(this, SelectionActivity.class);
                     orderIntent.putExtra("WMSD", rawResult.getText());
@@ -282,7 +394,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                 default:
                     Toast.makeText(getApplicationContext(), "WSMD not valid", Toast.LENGTH_LONG).show();
                     break;
-            }
+            }*/
             wsLoaded = true;
         }
     }

@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.google.zxing.Result;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
@@ -38,7 +39,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private static final String TAG = "MyStt3Activity";
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private static final int CAMERA_PIC_REQUEST = 1337;
-    ArrayList<MfseqOrder> values = new ArrayList();
+    ArrayList<OrdersModel> values = new ArrayList();
     private boolean mVisible;
     private ZXingScannerView mScannerView;
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
@@ -58,18 +59,24 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
         //HERE WE READ THE VALUE SENDED PREVIUSLY
         String WSMD  = getIntent().getStringExtra("WMSD");
+        OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");
+        Log.d("ORDENES", orders.getList().get(0).getAsm_code());
 //        wsmdText = (TextView)findViewById(R.id.mfseq_wsmd);
 //        wsmdText.setText(WSMD);
         Toast.makeText(getApplicationContext(), WSMD, Toast.LENGTH_LONG).show();
 
 
         values = new ArrayList();
-        values.add(new MfseqOrder(1,"AND-FIGURE-001", "Android figure", "895221030116", "125606-001", "open"));
+        for(OrdersModel o : orders.getList()){
+            values.add(new OrdersModel(o.getId(),o.getStatus_dscr(),o.getLotno(),o.getQty(),o.getAsm_code(),o.getAsm_dscr()));
+
+        }
+        /*values.add(new MfseqOrder(1,"AND-FIGURE-001", "Android figure", "895221030116", "125606-001", "open"));
         values.add(new MfseqOrder(2,"ASM-DSCR-006", "ASM001", "237645", "125152-001", "open"));
         values.add(new MfseqOrder(3,"HP-TINT-954XL", "Tint for HP printer", "889296895213", "297RE-001", "open"));
         values.add(new MfseqOrder(4,"ASM-TEST-003", "ASM002", "45063", "48414-001", "closed"));
         values.add(new MfseqOrder(5,"HP-TINT-954XL", "Tint for HP printer", "889296895176", "192Y84-001", "open"));
-        values.add(new MfseqOrder(6,"HP-TINT-954XL", "Tint for HP printer", "889296895213", "DPF385-001", "process"));
+        values.add(new MfseqOrder(6,"HP-TINT-954XL", "Tint for HP printer", "889296895213", "DPF385-001", "process"));*/
 
         MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);
         listView = (ListView) findViewById(R.id.list);
@@ -77,8 +84,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MfseqOrder item = (MfseqOrder) listView.getAdapter().getItem(position);
-                Toast.makeText(getApplicationContext(), item.getAsmDscr() + " selected", Toast.LENGTH_LONG).show();
+                OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
+                Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                 Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
                 orderIntent.putExtra("order", item);
                 startActivity(orderIntent);
@@ -141,7 +148,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     @Override
     public void OnResult(ArrayList<String> commands) {
-        MfseqOrder odertoSend= null;
+        OrdersModel odertoSend= null;
         for(String command:commands)
         {
             Log.d("On googleRecResult", command);
@@ -192,8 +199,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         mScannerView.stopCamera();
         setContentView(R.layout.activity_order_screen);
         for(int i = 0 ; i < values.size(); i++){
-            if( values.get(i).getFlowId().equalsIgnoreCase(rawResult.getText())){
-                MfseqOrder odertoSend = values.get(i);
+            if( values.get(i).getId().equalsIgnoreCase(rawResult.getText())){
+                OrdersModel odertoSend = values.get(i);
                 Intent orderIntent = new Intent(this, OMSDisplayActivity.class);
                 orderIntent.putExtra("order", odertoSend);
                 startActivity(orderIntent);
