@@ -12,7 +12,7 @@
 
     <TextView
         android:id="@+id/tpc_ordercode"
-        android:layout_toRightOf="@+id/metric_list_image"
+        android:layout_toRightOf="@+id/tpc_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"
@@ -21,7 +21,8 @@
 
     <TextView
         android:id="@+id/tpc_orderdscr"
-        android:layout_toRightOf="@+id/metric_list_image"
+        android:layout_toRightOf="@+id/tpc_image"
+        android:layout_below="@+id/tpc_ordercode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"
@@ -30,7 +31,8 @@
 
     <TextView
         android:id="@+id/tpc_message"
-        android:layout_toRightOf="@+id/metric_list_image"
+        android:layout_toRightOf="@+id/tpc_image"
+        android:layout_below="@+id/tpc_orderdscr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"

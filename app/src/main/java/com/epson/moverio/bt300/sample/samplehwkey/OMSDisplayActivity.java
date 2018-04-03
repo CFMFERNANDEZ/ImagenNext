@@ -67,12 +67,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
          * ALERT CONSTRUCTOR
          * */
         components = new ArrayList();
-        components.add(new Component("00-001", "Component 1", 1, ""));
-        components.add(new Component("00-002", "Component 2", 2, ""));
-        components.add(new Component("00-003", "Component 3", 3, ""));
-        components.add(new Component("00-004", "Component 4", 2, ""));
-        components.add(new Component("00-005", "Component 5", 1, ""));
-        components.add(new Component("00-006", "Component 6", 2, ""));
+        components.add(new Component("00-001", "Axis X", 1, ""));
+        components.add(new Component("00-002", "Axis Y", 2, ""));
+        components.add(new Component("00-003", "Screw 3/16", 3, ""));
+        components.add(new Component("00-004", "Screw Driver", 2, ""));
+        components.add(new Component("00-005", "Gear 5", 1, ""));
+        components.add(new Component("00-006", "Stopper 2", 2, ""));
 
         ComponentListAdapter adapterList = new ComponentListAdapter(this, components);
         AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
@@ -201,9 +201,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             ImageView tpcIcon = (ImageView)tpcView.findViewById(R.id.tpc_image);
             tpcIcon.setImageResource(R.drawable.tpcicon);
             TextView tpcCode = (TextView)tpcView.findViewById(R.id.tpc_ordercode);
-            tpcCode.setText(order.getAsmCode());
+            tpcCode.setText(order.getAsm_code());
             TextView tpcDscr = (TextView)tpcView.findViewById(R.id.tpc_orderdscr);
-            tpcDscr.setText(order.getAsmDscr());
+            tpcDscr.setText(order.getAsm_dscr());
             TextView tpcMessage = (TextView)tpcView.findViewById(R.id.tpc_message);
             tpcMessage.setText("Confirm your TPC.");
             tpcBuilder.setView(tpcView);
