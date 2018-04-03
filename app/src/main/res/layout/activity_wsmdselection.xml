@@ -2,8 +2,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#282a3c"
+    android:background="@drawable/background"
     tools:context="com.epson.moverio.bt300.sample.samplehwkey.WSMDSelectionActivity">
+
+    <RelativeLayout
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="0.2">
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/personnel_sublayout"
@@ -11,41 +17,69 @@
         android:layout_height="match_parent"
         android:layout_weight="0.6">
 
-        <ImageView
-            android:id="@+id/personnel_image"
+        <RelativeLayout
+            android:id="@+id/loadingPanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="center" >
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true" />
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/cflogo"
+            android:layout_width="70pt"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds = "true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/logocf"
             />
 
-    </RelativeLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/black_overlay"
-        android:orientation="horizontal"
-        tools:ignore="UselessParent">
+        <ImageView
+            android:id="@+id/personnel_image"
+            android:layout_width="70pt"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cflogo"
+            android:adjustViewBounds = "true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/personnel_img_background"
+            />
 
         <TextView
             android:id="@+id/personnel_name"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:textSize="30sp"/>
+            android:layout_below="@+id/personnel_image"
+            android:textSize="25sp"
+            android:layout_centerHorizontal="true"
+            android:textColor="#000000"/>
 
         <TextView
             android:id="@+id/personnel_code"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:layout_marginTop="180dp"
-            android:textSize="30sp"/>
+            android:layout_below="@+id/personnel_name"
+            android:textColor="#000000"
+            android:layout_centerHorizontal="true"
+            android:textSize="25sp"/>
 
         <TextView
             android:id="@+id/wsmd_message"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:text=""
-            android:textSize="30sp" />
-
-
-    </LinearLayout>
+            android:layout_below="@+id/personnel_code"
+            android:textColor="#000000"
+            android:layout_centerHorizontal="true"
+            android:textSize="20sp" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="0.2">
+    </RelativeLayout>
 
 </LinearLayout>
