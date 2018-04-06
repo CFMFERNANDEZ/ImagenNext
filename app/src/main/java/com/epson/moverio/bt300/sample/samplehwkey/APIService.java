@@ -31,4 +31,22 @@ public interface APIService {
     @GET("mfgseqorder/ordersbywsmd/{wsmdid}")
     Call<List<OrdersModel>> getOrdersByWSMD(@Path("wsmdid") String wsmd);
 
+    //Get the user image
+    @Headers({
+            "Lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("image/unsupervised/personnel/{id}")
+    Call<List<OrdersModel>> getUserImage(@Path("id") String id);
+
+    //Get fworks of a order
+    //Get the user image
+    @Headers({
+            "Lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("mfgseqorder/oms/{id}")
+    Call<List<fworkModel>> getfworks(@Path("id") String id);
+
+
 }

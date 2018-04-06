@@ -63,6 +63,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         mSpeechRecognizerManager.setOnResultListner(this);
         mImageView = (ImageView) findViewById(R.id.oms_image);
 
+        fworkModelList fworks = (fworkModelList) getIntent().getSerializableExtra("fworkList");
+
+        for(fworkModel o : fworks.getList()){
+            Log.d("ID Recibido",o.getC_Id().toString()+"");
+        }
+
         /**
          * ALERT CONSTRUCTOR
          * */

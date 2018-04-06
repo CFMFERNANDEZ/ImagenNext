@@ -9,7 +9,7 @@
     </style>
 
     <!-- Base application theme. -->
-    <style name="SmartGlass" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="SmartGlass" parent="Base.Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/smart_background</item>
         <item name="colorPrimaryDark">@color/smartPrimaryDark</item>

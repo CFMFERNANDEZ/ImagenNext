@@ -55,7 +55,7 @@ public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
 
         asmDscr.setText(mfseqOrders.get(i).getAsm_dscr());
         asmCode.setText(mfseqOrders.get(i).getAsm_code());
-        flowId.setText(mfseqOrders.get(i).getId());
+        flowId.setText(mfseqOrders.get(i).getQty());
         lotSerial.setText(mfseqOrders.get(i).getLotno());
 
 //        String s = mfseqOrders.get(i).getStatus();

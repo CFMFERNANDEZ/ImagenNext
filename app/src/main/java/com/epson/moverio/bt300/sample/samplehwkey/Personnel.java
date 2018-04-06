@@ -10,16 +10,16 @@ public class Personnel {
     private String c_fname;
     private String c_lname;
     private String c_code;
-    private String c_id;
+    private String c_email;
+    private String c_image;
 
-    public Personnel(String code,String fname, String lname, String id){
+    public Personnel(String code,String fname, String lname, String email,String image){
         this.c_fname = fname;
         this.c_lname = lname;
         this.c_code = code;
-        this.c_id = id;
+        this.c_email = email;
+        this.c_image = image;
     }
-
-    public String getId() { return c_id; }
 
     public String getC_fname() {
         return c_fname;
@@ -44,4 +44,12 @@ public class Personnel {
     public void setC_code(String c_code) {
         this.c_code = c_code;
     }
+
+    public String getC_email() { return c_email; }
+
+    public void setC_email(String c_email) { this.c_email = c_email; }
+
+    public String getC_image() { return c_image; }
+
+    public void setC_image(String c_image) { this.c_image = c_image; }
 }
