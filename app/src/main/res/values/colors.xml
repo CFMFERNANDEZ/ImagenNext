@@ -7,12 +7,13 @@
 
     <color name="smartPrimary">#2f344c</color>
     <color name="smartPrimaryDark">#2f344c</color>
-    <color name="smartAccent">#FF4081</color>
+    <color name="smartAccent">#2f344c</color>
     <color name="smart_overlay">#66000000</color>
 
-    <color name="smart_background">#000000</color>
-    <color name="smart_text">#080808</color>
+    <color name="smart_background">#ffffff</color>
+    <color name="smart_text">#ffffff</color>
 
     <color name="smartTransparent">#38d6d6d6</color>
     <color name="transparent">#0a494949</color>
+    <color name="black">#0a494949</color>
 </resources>
