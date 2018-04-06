@@ -12,13 +12,19 @@ public class Personnel {
     private String c_code;
     private String c_email;
     private String c_image;
+    private String c_id;
 
-    public Personnel(String code,String fname, String lname, String email,String image){
+    public Personnel(String code,String fname, String lname, String email,String image, String id){
         this.c_fname = fname;
         this.c_lname = lname;
         this.c_code = code;
         this.c_email = email;
         this.c_image = image;
+        this.c_id = id;
+    }
+
+    public String getId() {
+        return c_id;
     }
 
     public String getC_fname() {
