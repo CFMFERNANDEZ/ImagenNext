@@ -21,6 +21,8 @@ public interface APIService {
     @GET("querytable/PERSONNEL/bycode/{code}")
     Call<List<Personnel>> getUsersByCode(@Path("code") String code);
 
+    @GET("image/unsupervised/{table}/{id}")
+    Call<List<Image>> getImage(@Path("table") String table, @Path("id") String id);
     //Get orders by WSMD
     @Headers({
             "Lang: EN",
