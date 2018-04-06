@@ -19,17 +19,17 @@
             android:theme="@style/FullscreenSmart">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SelectionActivity"
-            android:theme="@style/FullscreenSmart">
-        </activity>
+            android:theme="@style/FullscreenSmart" />
         <activity
             android:name=".OMSDisplayActivity"
-            android:theme="@style/FullscreenSmart">
-        </activity>
+            android:theme="@style/FullscreenSmart" />
+        <activity android:name=".PreferenceActivityCustom"></activity>
     </application>
 
 </manifest>

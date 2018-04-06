@@ -10,12 +10,16 @@ public class Personnel {
     private String c_fname;
     private String c_lname;
     private String c_code;
+    private String c_id;
 
-    public Personnel(String code,String fname, String lname){
+    public Personnel(String code,String fname, String lname, String id){
         this.c_fname = fname;
         this.c_lname = lname;
         this.c_code = code;
+        this.c_id = id;
     }
+
+    public String getId() { return c_id; }
 
     public String getC_fname() {
         return c_fname;
