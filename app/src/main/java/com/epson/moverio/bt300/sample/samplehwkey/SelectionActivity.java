@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -15,6 +16,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SelectionActivity extends Activity implements SpeechRecognizerManager.OnResultListener, ZXingScannerView.ResultHandler{
 
@@ -45,12 +53,14 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private ZXingScannerView mScannerView;
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
 
+    public static String ID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection);
         //Immersive mode
-        mContentView = findViewById(R.id.selection_content_view);
+        mContentView = findViewById(R.id.WSLabel);
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -60,6 +70,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
         //HERE WE READ THE VALUE SENDED PREVIUSLY
         String WSMD  = getIntent().getStringExtra("WMSD");
+        TextView WSLabel = (TextView) findViewById(R.id.WSLabel);
+        WSLabel.setText("Workstation: "+WSMD);
         OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");
         Log.d("ORDENES", orders.getList().get(0).getAsm_code());
 //        wsmdText = (TextView)findViewById(R.id.mfseq_wsmd);
@@ -87,10 +99,12 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
-                Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
-                orderIntent.putExtra("order", item);
-                orderInAction = "Estoy en Selection";
-                startActivity(orderIntent);
+                ID = item.getId();
+                new fwork().execute();
+                //Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
+                //orderIntent.putExtra("order", item);
+                //orderInAction = "Estoy en Selection";
+                //startActivity(orderIntent);
             }
         });
 //        mSpeechRecognizerManager = new SpeechRecognizerManager(this);
@@ -107,6 +121,49 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 //            }
 //        }
     }
+
+    public class fwork extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids){
+            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            APIService apiService = retrofit.create(APIService.class);
+            final Call<List<fworkModel>> fworks = apiService.getfworks(ID);  //Return one record searching by CODE
+
+            fworks.enqueue(new Callback<List<fworkModel>>() {
+                @Override
+                public void onResponse(Call<List<fworkModel>> call, Response<List<fworkModel>> response) {
+                    if(response.isSuccessful()&& response.body().size() > 0) {
+                        List<fworkModel> auxList = new ArrayList();
+                        int i = 0;
+                        for(fworkModel fwModel : response.body()){
+                            //Log.d("IDFWORK", fwModel.getC_Id().toString()+"");
+                            auxList.add(response.body().get(i));
+                            i++;
+                        }
+                        Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
+                        orderIntent.putExtra("fworkList", new fworkModelList(auxList));
+                        startActivity(orderIntent);
+
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<fworkModel>> call, Throwable t) {
+                    Log.e("ERROR", t.toString());
+                }
+            });
+            return null;
+        }
+    }
+
 
     public void QrScanner(){
         Log.d("Context QR",this.toString());

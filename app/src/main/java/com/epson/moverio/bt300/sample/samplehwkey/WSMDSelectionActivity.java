@@ -129,6 +129,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     private static ImageView personnelPhoto;
     private static TextView personnelName;
     private static TextView personnelCode;
+    private static TextView personnelEmail;
     private static TextView message;
 
     private APIService mAPIService;
@@ -174,11 +175,13 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
             personnelName = (TextView)findViewById(R.id.personnel_name);
             personnelCode = (TextView)findViewById(R.id.personnel_code);
+            personnelEmail = (TextView)findViewById(R.id.personnel_email);
             message = (TextView)findViewById(R.id.wsmd_message);
 
             personnelPhoto.setImageResource(R.drawable.bordeau);
             personnelName.setText(personSelected.getC_lname()+" "+personSelected.getC_fname());
             personnelCode.setText(personSelected.getC_code());
+            personnelEmail.setText(personSelected.getC_email());
             message.setText("Press Up button for scan your WS");
             wsLoaded = false;
         }
@@ -187,7 +190,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     public class login extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+            final String url = "http://192.168.1.9:8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
@@ -208,12 +211,15 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                         personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
                         personnelName = (TextView)findViewById(R.id.personnel_name);
                         personnelCode = (TextView)findViewById(R.id.personnel_code);
+                        personnelEmail = (TextView)findViewById(R.id.personnel_email);
                         message = (TextView)findViewById(R.id.wsmd_message);
 
-                        personnelPhoto.setImageResource(R.drawable.bordeau);
+                        //personnelPhoto.setImageResource(R.drawable.bordeau);
                         personnelName.setText(personSelected.getC_lname()+" "+personSelected.getC_fname());
+                        personnelCode.setText(personSelected.getC_code());
+                        personnelEmail.setText(personSelected.getC_email());
                         //personnelCode.setText(person.getUserCode());
-                        message.setText("Press Left button for scan your WS");
+                        message.setText("Press Right button for scan your WS");
                         personnelLoaded = true;
 
                     }else{
@@ -229,10 +235,47 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         }
     }
 
+    public class userImage extends  AsyncTask<Void,Void,Void>{
+        @Override
+        protected Void doInBackground(Void... voids){
+            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            APIService apiService = retrofit.create(APIService.class);
+            Call orders = apiService.getOrdersByWSMD(ID);  //Return one record searching by CODE
+
+            orders.enqueue(new Callback<List<OrdersModel>>() {
+                @Override
+                public void onResponse(Call<List<OrdersModel>> call, Response<List<OrdersModel>> response) {
+                    if(response.isSuccessful()&& response.body().size() > 0) {
+
+                        Log.d("IMAGENRESPUESTA",response.toString());
+                        //personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
+
+
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Workstation error", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<OrdersModel>> call, Throwable t) {
+                    Log.e("ERROR", t.toString());
+                }
+            });
+            return null;
+        }
+    }
+
     public class wsmgSelection extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+            final String url = "http://192.168.1.9:8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
@@ -353,7 +396,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
                     QrScanner();
                     break;
                 default:

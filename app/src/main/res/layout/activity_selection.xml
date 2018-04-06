@@ -1,36 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="horizontal"
-tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity">
-
-
-<FrameLayout
-    android:id="@+id/selection_content_view"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
-    <LinearLayout
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/fullscreen_content_controls"
         style="?metaButtonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:orientation="horizontal"
-        tools:ignore="UselessParent">
+        android:background="@drawable/background"
+        tools:context="com.epson.moverio.bt300.sample.samplehwkey.SelectionActivity"
+        tools:ignore="">
 
         <ListView
             android:id="@+id/list"
-            android:divider="@color/smart_background"
-            android:background="@color/smartTransparent"
-            android:dividerHeight="1dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-        </ListView>
+            android:layout_height="wrap_content"
+            android:background="@color/smartTransparent"
+            android:divider="@color/smart_background"
+            android:dividerHeight="1dp"
+            android:layout_marginTop="63dp"
+            android:layout_below="@+id/imageView2"
+            android:textColor="@color/smart_text"></ListView>
 
-    </LinearLayout>
-</FrameLayout>
+    <TextView
+        android:id="@+id/WSLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="128dp"
+        android:layout_marginTop="29dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Name" />
 
-</FrameLayout>
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="70dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="647dp"
+        android:layout_toStartOf="@+id/WSLabel"
+        android:scaleType="fitStart"
+        android:src="@drawable/logocf" />
+
+</RelativeLayout>
