@@ -241,8 +241,8 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
 
 //                        personnelPhoto.setImageResource(R.drawable.bordeau);
                         personnelName.setText(personSelected.getC_lname()+" "+personSelected.getC_fname());
-                        //personnelCode.setText(person.getUserCode());
-                        message.setText("Press Up button for scan your WS");
+                        personnelCode.setText(personSelected.getC_code());
+                        message.setText("Press Right button for scan your WS");
                         personnelLoaded = true;
 
                         Call<List<Image>> foto = apiService.getImage("personnel", personSelected.getId());
@@ -402,7 +402,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
                     QrScanner();
                     break;
                 default:

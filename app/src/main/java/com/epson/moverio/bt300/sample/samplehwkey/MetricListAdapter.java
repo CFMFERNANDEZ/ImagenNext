@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by CellFusion on 3/26/2018.
@@ -19,14 +20,14 @@ import java.util.ArrayList;
 
 public class MetricListAdapter extends ArrayAdapter<Metric> {
 
-    private ArrayList<Metric> metrics;
+    private List<Metric> metrics;
     private Context context;
     private TextView metricCode;
     private TextView spectedQuantity;
     private TextView inputQuantity;
     private ImageView componentImage;
 
-    public MetricListAdapter(Context context, ArrayList<Metric> metrics){
+    public MetricListAdapter(Context context, List<Metric> metrics){
         super(context, -1, metrics);
         this.context = context;
         this.metrics = metrics;
@@ -44,8 +45,8 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
         metricCode = (TextView)rowView.findViewById(R.id.metric_code);
         spectedQuantity = (TextView)rowView.findViewById(R.id.metric_spected);
         inputQuantity = (EditText)rowView.findViewById(R.id.metric_input);
-        metricCode.setText(metrics.get(i).getCode());
-        spectedQuantity.setText(metrics.get(i).getSpectedQuantity()+"");
+        metricCode.setText(metrics.get(i).getMeasure_code());
+        spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
         return rowView;
     }
 }

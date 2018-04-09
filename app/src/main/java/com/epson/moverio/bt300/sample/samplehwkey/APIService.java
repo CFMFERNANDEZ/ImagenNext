@@ -49,4 +49,12 @@ public interface APIService {
     Call<List<fworkModel>> getfworks(@Path("id") String id);
 
 
+    //Get IMAGE by Path
+    @Headers({
+            "lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("image/{path}")
+    Call<List<Image>> getImageByPath(@Path("path") String path);
+
 }

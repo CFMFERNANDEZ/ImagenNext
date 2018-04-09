@@ -143,14 +143,13 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                         List<fworkModel> auxList = new ArrayList();
                         int i = 0;
                         for(fworkModel fwModel : response.body()){
-                            //Log.d("IDFWORK", fwModel.getC_Id().toString()+"");
+                            Log.d("IDFWORK", fwModel.getC_Id().toString()+"");
                             auxList.add(response.body().get(i));
                             i++;
                         }
                         Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
                         orderIntent.putExtra("fworkList", new fworkModelList(auxList));
                         startActivity(orderIntent);
-
                     }else{
                         Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
                     }
