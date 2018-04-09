@@ -56,4 +56,12 @@ public interface APIService {
     Call<List<String>> nextOMS(@Path("mfseq_id") String mfseq_id, @Path("fwork_id") String fwork_id );
 
 
+    //Get IMAGE by Path
+    @Headers({
+            "lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("image/{path}")
+    Call<List<Image>> getImageByPath(@Path("path") String path);
+
 }

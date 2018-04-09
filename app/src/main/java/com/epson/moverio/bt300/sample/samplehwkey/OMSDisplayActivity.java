@@ -14,10 +14,12 @@ package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -33,7 +35,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.dm7.barcodescanner.zxing.ZXingScannerView;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -59,6 +61,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private ArrayList<Metric> metrics;
     private fworkModel fworkActual;
     private fworkModelList fworks;
+    private APIService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,19 +90,20 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             fworkActual = fworks.getList().get(0);
             fworkActual.setC_first_event("true");
         }
+        fworkActual = fworks.getList().get(0);
 
         /**
          * ALERT CONSTRUCTOR
          * */
-        components = new ArrayList();
-        components.add(new Component("00-001", "Axis X", 1, ""));
-        components.add(new Component("00-002", "Axis Y", 2, ""));
-        components.add(new Component("00-003", "Screw 3/16", 3, ""));
-        components.add(new Component("00-004", "Screw Driver", 2, ""));
-        components.add(new Component("00-005", "Gear 5", 1, ""));
-        components.add(new Component("00-006", "Stopper 2", 2, ""));
+//        components = new ArrayList();
+//        components.add(new Component("00-001", "Axis X", 1, ""));
+//        components.add(new Component("00-002", "Axis Y", 2, ""));
+//        components.add(new Component("00-003", "Screw 3/16", 3, ""));
+//        components.add(new Component("00-004", "Screw Driver", 2, ""));
+//        components.add(new Component("00-005", "Gear 5", 1, ""));
+//        components.add(new Component("00-006", "Stopper 2", 2, ""));
 
-        ComponentListAdapter adapterList = new ComponentListAdapter(this, components);
+        ComponentListAdapter adapterList = new ComponentListAdapter(this, fworkActual.getComponent());
         AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
         componentView = inflater.inflate(R.layout.component_alert_layout, null);
@@ -118,14 +122,14 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         alertComponent = builder.create();
 
         /*ALERT METRICS*/
-        metrics = new ArrayList();
-        metrics.add(new Metric("radio", 15, 0));
-        metrics.add(new Metric("resistance", 0.5, 0));
-        metrics.add(new Metric("tolerance", 1, 0));
-        metrics.add(new Metric("height", 5, 0));
+//        metrics = new ArrayList();
+//        metrics.add(new Metric("radio", 15, 0));
+//        metrics.add(new Metric("resistance", 0.5, 0));
+//        metrics.add(new Metric("tolerance", 1, 0));
+//        metrics.add(new Metric("height", 5, 0));
 
 
-        MetricListAdapter metricAdapter = new MetricListAdapter(this, metrics);
+        MetricListAdapter metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
         AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
         LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
         metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);
@@ -142,6 +146,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         });
         metricBuilder.setCancelable(false);
         alertMetric = metricBuilder.create();
+        new omsPicture().execute();
     }
 
     public void setImmersive(){
@@ -181,7 +186,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     protected void onResume() {
         super.onResume();
         mImageIndex = 0;
-        setImage(0);
     }
 
     @Override
@@ -199,8 +203,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     mImageIndex++;
-                    //changeImage();
-                    new nextOms().execute();
+
                     break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
@@ -360,5 +363,41 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     protected void onDestroy() {
         super.onDestroy();
         mSpeechRecognizerManager.destroy();
+    }
+
+    public class omsPicture extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids){
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.181");
+            final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            apiService = retrofit.create(APIService.class);
+            String pathCoded = Base64.encodeToString( fworkActual.getOms_path().getBytes(), Base64.NO_WRAP);
+            Call<List<Image>> image = apiService.getImageByPath(pathCoded);  //Return one record searching by CODE
+            image.enqueue(new Callback<List<Image>>() {
+                @Override
+                public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {
+                    if(response.isSuccessful()&& response.body().size() > 0) {
+                        Image image = response.body().get(0);
+                        Log.d("IMAGE", image.getImage_1());
+                        mImageView = (ImageView)findViewById(R.id.oms_image);
+                        mImageView.setImageBitmap(image.getImage());
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Cant load image", Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Image>> call, Throwable t) {
+                    Log.e("ERROR", t.toString());
+                }
+            });
+            return null;
+        }
     }
 }

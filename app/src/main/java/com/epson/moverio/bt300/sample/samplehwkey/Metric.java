@@ -8,25 +8,31 @@ import java.io.Serializable;
 
 public class Metric implements Serializable {
 
-    private String metricCode;
-    private double spectedQuantity;
-    private double inputMetric;
+    private String measure_dscr;
+    private String measure_code;
+    private String measure_htarget;
+    private String measure_ltarget;
 
-    public Metric(String code, double spected, double input){
-        this.metricCode = code;
-        this.spectedQuantity = spected;
-        this.inputMetric = input;
+    public Metric(String code, String dscr, String htarget, String ltarget){
+        this.measure_dscr = dscr;
+        this.measure_code = code;
+        this.measure_htarget = htarget;
+        this.measure_ltarget = ltarget;
     }
 
-    public String getCode(){
-        return this.metricCode;
+    public String getMeasure_dscr() {
+        return measure_dscr;
     }
 
-    public double getSpectedQuantity(){
-        return this.spectedQuantity;
+    public String getMeasure_code() {
+        return measure_code;
     }
 
-    public double getInputMetric(){
-        return this.inputMetric;
+    public String getMeasure_htarget() {
+        return measure_htarget;
+    }
+
+    public String getMeasure_ltarget() {
+        return measure_ltarget;
     }
 }

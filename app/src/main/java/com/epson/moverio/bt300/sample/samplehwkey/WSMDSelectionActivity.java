@@ -408,7 +408,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
                     QrScanner();
                     break;
                 default:

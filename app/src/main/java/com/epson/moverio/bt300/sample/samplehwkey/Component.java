@@ -1,38 +1,30 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
-import java.io.Serializable;
-
 /**
  * Created by CellFusion on 3/26/2018.
  */
 
 public class Component implements Serializable{
 
-    private String code;
-    private String dscr;
-    private int quantity;
-    private String image;
+    private String comp_code;
+    private String comp_dscr;
+    private int comp_qty;
 
-    public Component(String code, String dscr, int quantity, String image){
-        this.code = code;
-        this.dscr = dscr;
-        this.quantity = quantity;
-        this.image = image;
+    public Component(String code, String dscr, int quantity) {
+        this.comp_code = code;
+        this.comp_dscr = dscr;
+        this.comp_qty = quantity;
     }
 
-    public String getCode(){
-        return this.code;
+    public String getCode() {
+        return this.comp_code;
     }
 
-    public String getDscr(){
-        return this.dscr;
+    public String getDscr() {
+        return this.comp_dscr;
     }
 
-    public int getQuantity(){
-        return this.quantity;
-    }
-
-    public String getImage(){
-        return this.image;
+    public int getQuantity() {
+        return this.comp_qty;
     }
 }
