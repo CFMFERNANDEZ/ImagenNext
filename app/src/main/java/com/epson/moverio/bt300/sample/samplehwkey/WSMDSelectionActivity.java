@@ -151,7 +151,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         setContentView(R.layout.activity_wsmdselection);
         mVisible = true;
         mControlsView = findViewById(R.id.personnel_sublayout);
-        mContentView = findViewById(R.id.personnel_sublayout);
+        mContentView = findViewById(R.id.cflogo);
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -425,6 +425,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         setContentView(R.layout.activity_wsmdselection);
 //        Intent orderIntent;
         if( !personnelLoaded){
+            setImmersive();
             new login().execute();
             /*for(Personnel person : PERSONNELS){
                 Log.d("ID PERSON", person.getC_code()+"");
@@ -471,5 +472,14 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             }*/
             wsLoaded = true;
         }
+    }
+
+    public void setImmersive(){
+        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 }

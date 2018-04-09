@@ -35,6 +35,7 @@
         android:id="@+id/component_quantity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="32pt"
         android:layout_alignParentRight="true"
         />
 
