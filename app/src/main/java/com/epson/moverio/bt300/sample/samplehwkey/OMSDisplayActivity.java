@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.google.zxing.Result;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private View tpcView;
     private ArrayList<Component> components;
     private ArrayList<Metric> metrics;
+    private fworkModel fworkActual;
+    private fworkModelList fworks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,15 +68,24 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
 
-        order = (OrdersModel)getIntent().getSerializableExtra("order");
+        order = (OrdersModel) getIntent().getSerializableExtra("order");
         mSpeechRecognizerManager = new SpeechRecognizerManager(this);
         mSpeechRecognizerManager.setOnResultListner(this);
         mImageView = (ImageView) findViewById(R.id.oms_image);
 
-        fworkModelList fworks = (fworkModelList) getIntent().getSerializableExtra("fworkList");
-
+        fworks = (fworkModelList) getIntent().getSerializableExtra("fworkList");
+        int i = 0;
         for(fworkModel o : fworks.getList()){
-            Log.d("ID Recibido",o.getC_Id().toString()+"");
+            if(o.getFirst_event()!=null){
+                if(o.getFirst_event().equals("true")){
+                    fworkActual = o;
+                }
+            }
+        }
+
+        if(fworkActual == null){
+            fworkActual = fworks.getList().get(0);
+            fworkActual.setC_first_event("true");
         }
 
         /**
@@ -187,7 +199,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     mImageIndex++;
-                    changeImage();
+                    //changeImage();
+                    new nextOms().execute();
                     break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
@@ -206,7 +219,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     public class nextOms extends AsyncTask<Void,Void,Void>{
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
@@ -215,7 +228,28 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     .build();
 
             APIService apiService = retrofit.create(APIService.class);
-            //final Call<String> fworks = apiService.nextOMS(order.getId(),);  //Return one record searching by CODE
+            final Call<List<String>> nextOMSResponse = apiService.nextOMS(order.getId(),fworkActual.getC_Id());  //Return success
+
+            nextOMSResponse.enqueue(new Callback<List<String>>() {
+                @Override
+                public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+                    if(response.isSuccessful() && response.body().size() > 0) {
+                        Log.d("SUCCESS",response+"");
+                        if(mImageIndex != fworks.getList().size()) {
+                            fworkActual = fworks.getList().get(mImageIndex);
+                            fworkActual.setC_first_event("true");
+                        }else{
+                            TPCDialog();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<String>> call, Throwable t) {
+                    Log.e("Error", t+"");
+                }
+            });
+
 
 
             return null;
@@ -270,6 +304,49 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             mImageIndex = order.getOMSSize() - 1;
         }
         setImage(mImageIndex);
+    }
+
+    private void TPCDialog(){
+         /*TPC DIALOG*/
+        AlertDialog.Builder tpcBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater tpcInflater = LayoutInflater.from(getApplicationContext());
+        tpcView = tpcInflater.inflate(R.layout.tpc_alert_layout, null);
+        ImageView tpcIcon = (ImageView)tpcView.findViewById(R.id.tpc_image);
+        tpcIcon.setImageResource(R.drawable.tpcicon);
+        TextView tpcCode = (TextView)tpcView.findViewById(R.id.tpc_ordercode);
+        tpcCode.setText(order.getAsm_code());
+        TextView tpcDscr = (TextView)tpcView.findViewById(R.id.tpc_orderdscr);
+        tpcDscr.setText(order.getAsm_dscr());
+        TextView tpcMessage = (TextView)tpcView.findViewById(R.id.tpc_message);
+        tpcMessage.setText("Confirm your TPC.");
+        tpcBuilder.setView(tpcView);
+        tpcBuilder.setTitle("TPC Confirmation.");
+        tpcBuilder.setIcon(R.drawable.ok);
+        tpcBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        tpcBuilder.setCancelable(false);
+        tpcDialog = tpcBuilder.create();
+        tpcDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+        tpcDialog.show();
     }
 
     private void setImage(int index) {

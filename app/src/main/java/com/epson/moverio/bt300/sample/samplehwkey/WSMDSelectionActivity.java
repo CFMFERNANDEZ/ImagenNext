@@ -219,7 +219,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         @Override
         protected Void doInBackground(Void... voids){
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            String server = prefs.getString("cf_server", "192.168.1.181");
+            String server = prefs.getString("cf_server", "192.168.1.166");
             Log.d("SERVER", server);
             final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
 
@@ -286,7 +286,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         @Override
         protected Void doInBackground(Void... voids){
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            String server = prefs.getString("cf_server", "192.168.1.181");
+            String server = prefs.getString("cf_server", "192.168.1.166");
             final String url = "http://" + server +":8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()

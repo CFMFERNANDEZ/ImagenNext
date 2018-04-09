@@ -52,8 +52,8 @@ public interface APIService {
             "Lang: EN",
             "database: PLW-QAS-S"
     })
-    @GET("next/{mfseq_id}/{fwork_id}")
-    Call<List<fworkModel>> nextOMS(@Path("mfseq_id") String mfseq_id, @Path("fwork_id") String fwork_id );
+    @GET("mfgseqorder/next/{mfseq_id}/{fwork_id}")
+    Call<List<String>> nextOMS(@Path("mfseq_id") String mfseq_id, @Path("fwork_id") String fwork_id );
 
 
 }
