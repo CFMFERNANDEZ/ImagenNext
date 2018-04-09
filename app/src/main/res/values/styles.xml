@@ -47,4 +47,9 @@
         <item name="android:background">@color/black_overlay</item>
     </style>
 
+    <style name="mfseqScreenList" parent="AppTheme">
+        <item name="android:textColor">@color/smart_overlay</item>
+    </style>
+
+
 </resources>

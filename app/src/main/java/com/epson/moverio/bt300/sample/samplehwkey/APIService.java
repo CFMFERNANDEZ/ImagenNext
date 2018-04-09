@@ -12,7 +12,12 @@ import retrofit2.http.Headers;
 import retrofit2.http.Path;
 
 public interface APIService {
-
+    //Query WSMD by table and ID
+    @Headers({
+            "database: PLW-QAS-S"
+    })
+    @GET("querytable/WSMD/{id}")
+    Call<List<WSMDmodel>> getWSMD(@Path("id") String id);
     //Get user by code
     @Headers({
             "Lang: EN",

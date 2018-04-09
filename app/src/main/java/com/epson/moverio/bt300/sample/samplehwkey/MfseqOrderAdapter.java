@@ -22,7 +22,7 @@ public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
     private Context context;
     private TextView asmDscr;
     private TextView asmCode;
-    private TextView flowId;
+    private TextView quantity;
     private TextView lotSerial;
     private ImageView status;
 
@@ -49,23 +49,14 @@ public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
 
         asmDscr = (TextView) rowView.findViewById(R.id.mfseq_asmdscr);
         asmCode = (TextView) rowView.findViewById(R.id.mfseq_asmcode);
-        flowId = (TextView) rowView.findViewById(R.id.mfseq_flowid);
+        quantity = (TextView) rowView.findViewById(R.id.mfseq_quantity);
         lotSerial = (TextView) rowView.findViewById(R.id.mfseq_serialn);
-//        status = (ImageView) rowView.findViewById(R.id.mfseq_status);
 
         asmDscr.setText(mfseqOrders.get(i).getAsm_dscr());
         asmCode.setText(mfseqOrders.get(i).getAsm_code());
-        flowId.setText(mfseqOrders.get(i).getQty());
+        quantity.setText(mfseqOrders.get(i).getQty());
         lotSerial.setText(mfseqOrders.get(i).getLotno());
 
-//        String s = mfseqOrders.get(i).getStatus();
-//        if (s.contains("closed")) {
-//            status.setImageResource(R.mipmap.closed);
-//        } else if (s.contains("process")) {
-//            status.setImageResource(R.mipmap.process);
-//        } else {
-//            status.setImageResource(R.mipmap.open);
-//        }
         return rowView;
     }
 }

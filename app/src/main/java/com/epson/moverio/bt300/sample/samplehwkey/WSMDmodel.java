@@ -1,10 +1,12 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
+import java.io.Serializable;
+
 /**
  * Created by CellFusion on 3/27/2018.
  */
 
-public class WSMDmodel {
+public class WSMDmodel implements Serializable{
 
     private String c_code;
     private String c_ws;

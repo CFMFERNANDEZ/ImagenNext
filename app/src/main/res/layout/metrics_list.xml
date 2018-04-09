@@ -11,7 +11,7 @@
         android:layout_width="50dip"
         android:layout_height="50dip"
         android:background="@color/smart_text"
-        android:src="@mipmap/metrics"/>
+        android:src="@drawable/metrics"/>
 
     <TextView
         android:id="@+id/metric_code"

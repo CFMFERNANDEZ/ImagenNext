@@ -44,6 +44,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private View mContentView;
     private ListView listView;
     private TextView wsmdText;
+    private TextView personText;
     private static final String TAG = "MyStt3Activity";
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private static final int CAMERA_PIC_REQUEST = 1337;
@@ -71,28 +72,22 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
         //HERE WE READ THE VALUE SENDED PREVIUSLY
-        String WSMD  = getIntent().getStringExtra("WMSD");
-        TextView WSLabel = (TextView) findViewById(R.id.WSLabel);
-        WSLabel.setText("Workstation: "+WSMD);
+        WSMDmodel WSMD  = (WSMDmodel) getIntent().getSerializableExtra("WSMD");
+        if( WSMD != null){
+            wsmdText = (TextView)findViewById(R.id.WSLabel);
+            wsmdText.setText(WSMD.getC_code()+ "-"+WSMD.getC_dscr());
+        }
+        Personnel actualPerson  = (Personnel) getIntent().getSerializableExtra("Person");
+        if(actualPerson != null){
+            personText =( TextView)findViewById(R.id.selection_personname);
+            personText.setText( actualPerson.getC_lname() +" "+ actualPerson.getC_lname() );
+        }
         OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");
-        Log.d("ORDENES", orders.getList().get(0).getAsm_code());
-//        wsmdText = (TextView)findViewById(R.id.mfseq_wsmd);
-//        wsmdText.setText(WSMD);
-        Toast.makeText(getApplicationContext(), WSMD, Toast.LENGTH_LONG).show();
-
-
         values = new ArrayList();
         for(OrdersModel o : orders.getList()){
             values.add(new OrdersModel(o.getId(),o.getStatus_dscr(),o.getLotno(),o.getQty(),o.getAsm_code(),o.getAsm_dscr()));
 
         }
-        /*values.add(new MfseqOrder(1,"AND-FIGURE-001", "Android figure", "895221030116", "125606-001", "open"));
-        values.add(new MfseqOrder(2,"ASM-DSCR-006", "ASM001", "237645", "125152-001", "open"));
-        values.add(new MfseqOrder(3,"HP-TINT-954XL", "Tint for HP printer", "889296895213", "297RE-001", "open"));
-        values.add(new MfseqOrder(4,"ASM-TEST-003", "ASM002", "45063", "48414-001", "closed"));
-        values.add(new MfseqOrder(5,"HP-TINT-954XL", "Tint for HP printer", "889296895176", "192Y84-001", "open"));
-        values.add(new MfseqOrder(6,"HP-TINT-954XL", "Tint for HP printer", "889296895213", "DPF385-001", "process"));*/
-
         MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);
         listView = (ListView) findViewById(R.id.list);
         listView.setAdapter(adapter);
@@ -103,25 +98,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                 ID = item.getId();
                 new fwork().execute();
-                //Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
-                //orderIntent.putExtra("order", item);
-                //orderInAction = "Estoy en Selection";
-                //startActivity(orderIntent);
             }
         });
-//        mSpeechRecognizerManager = new SpeechRecognizerManager(this);
-//        mSpeechRecognizerManager.setOnResultListner(this);
-
-//        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-//        if (currentapiVersion >= android.os.Build.VERSION_CODES.M) {
-//            if (hasPermissions(this, PERMISSIONS)) {
-//                Toast.makeText(getApplicationContext(), "Permission already granted", Toast.LENGTH_LONG).show();
-//                mSpeechRecognizerManager = new SpeechRecognizerManager(this);
-//                mSpeechRecognizerManager.setOnResultListner(this);
-//            } else {
-//                ActivityCompat.requestPermissions(this, PERMISSIONS, ALL_PERMISSION);
-//            }
-//        }
     }
 
     public class fwork extends AsyncTask<Void,Void,Void> {
