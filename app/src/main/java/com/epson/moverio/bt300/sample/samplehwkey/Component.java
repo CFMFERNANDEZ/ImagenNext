@@ -1,7 +1,5 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
-import java.io.Serializable;
-
 /**
  * Created by CellFusion on 3/26/2018.
  */

@@ -55,6 +55,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
 
     public static String ID;
+    public static OrdersModel auxOrderModel;
 
     public static String IdOms;
 
@@ -97,6 +98,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                 ID = item.getId();
+                auxOrderModel = item;
                 new fwork().execute();
             }
         });
@@ -105,7 +107,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public class fwork extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";   
+            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
@@ -127,7 +129,9 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                             auxList.add(response.body().get(i));
                             i++;
                         }
+
                         Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
+                        orderIntent.putExtra("order",auxOrderModel);
                         orderIntent.putExtra("fworkList", new fworkModelList(auxList));
                         startActivity(orderIntent);
                     }else{
