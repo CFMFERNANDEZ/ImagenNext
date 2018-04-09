@@ -15,6 +15,7 @@ package com.epson.moverio.bt300.sample.samplehwkey;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,8 +30,14 @@ import android.widget.Toast;
 import com.google.zxing.Result;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener {
 
@@ -196,6 +203,25 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         return super.dispatchKeyEvent(event);
     }
 
+    public class nextOms extends AsyncTask<Void,Void,Void>{
+        @Override
+        protected Void doInBackground(Void... voids){
+            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            APIService apiService = retrofit.create(APIService.class);
+            //final Call<String> fworks = apiService.nextOMS(order.getId(),);  //Return one record searching by CODE
+
+
+            return null;
+        }
+    }
+
     private void changeImage() {
         Log.d("ON CHANGE IMAGE", mImageIndex+"");
         if (order.getOMSSize() <= mImageIndex) {
@@ -247,10 +273,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     }
 
     private void setImage(int index) {
-        if (0 <= index && index < order.getOMSSize()) {
+        /*if (0 <= index && index < order.getOMSSize()) {
             mImageView.setImageResource(order.getImage(index));
             mImageIndex = index;
-        }
+        }*/
     }
 
     @Override

@@ -139,6 +139,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     private static ImageView personnelPhoto;
     private static TextView personnelName;
     private static TextView personnelCode;
+    private static TextView personnelEmail;
     private static TextView message;
     private APIService apiService;
 
@@ -186,12 +187,14 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
             personnelName = (TextView)findViewById(R.id.personnel_name);
             personnelCode = (TextView)findViewById(R.id.personnel_code);
+            personnelEmail = (TextView)findViewById(R.id.personnel_email);
             message = (TextView)findViewById(R.id.wsmd_message);
 
             personnelPhoto.setImageResource(R.drawable.bordeau);
             personnelName.setText(personSelected.getC_lname()+" "+personSelected.getC_fname());
             personnelCode.setText(personSelected.getC_code());
-            message.setText("Press Right button for scan your WS");
+            personnelEmail.setText(personSelected.getC_email());
+            message.setText("Press Up button for scan your WS");
             wsLoaded = false;
         }
     }
@@ -237,15 +240,18 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                         personSelected = response.body().get(0);
                         personnelName = (TextView)findViewById(R.id.personnel_name);
                         personnelCode = (TextView)findViewById(R.id.personnel_code);
+                        personnelEmail = (TextView)findViewById(R.id.personnel_email);
                         message = (TextView)findViewById(R.id.wsmd_message);
 
 //                        personnelPhoto.setImageResource(R.drawable.bordeau);
                         personnelName.setText(personSelected.getC_lname()+" "+personSelected.getC_fname());
+                        personnelCode.setText(personSelected.getC_code());
+                        personnelEmail.setText(personSelected.getC_email());
                         //personnelCode.setText(person.getUserCode());
-                        message.setText("Press Up button for scan your WS");
+                        message.setText("Press Right button for scan your WS");
                         personnelLoaded = true;
 
-                        Call<List<Image>> foto = apiService.getImage("personnel", personSelected.getId());
+                        Call<List<Image>> foto = apiService.getImage("personnel", personSelected.getC_id());
                         foto.enqueue(new Callback<List<Image>>() {
                             @Override
                             public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {

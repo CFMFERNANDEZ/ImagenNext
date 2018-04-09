@@ -46,7 +46,14 @@ public interface APIService {
             "database: PLW-QAS-S"
     })
     @GET("mfgseqorder/oms/{id}")
-    Call<List<fworkModel>> getfworks(@Path("id") String id);
+    Call<List<fworkModel>> getfWorks(@Path("id") String id);
+
+    @Headers({
+            "Lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("next/{mfseq_id}/{fwork_id}")
+    Call<List<fworkModel>> nextOMS(@Path("mfseq_id") String mfseq_id, @Path("fwork_id") String fwork_id );
 
 
 }

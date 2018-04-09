@@ -12,13 +12,15 @@ public class Personnel {
     private String c_code;
     private String c_email;
     private String c_image;
+    private String c_id;
 
-    public Personnel(String code,String fname, String lname, String email,String image){
+    public Personnel(String code,String fname, String lname, String email,String image, String id){
         this.c_fname = fname;
         this.c_lname = lname;
         this.c_code = code;
         this.c_email = email;
         this.c_image = image;
+        this.c_id = id;
     }
 
     public String getC_fname() {
@@ -52,4 +54,8 @@ public class Personnel {
     public String getC_image() { return c_image; }
 
     public void setC_image(String c_image) { this.c_image = c_image; }
+
+    public String getC_id() {
+        return c_id;
+    }
 }
