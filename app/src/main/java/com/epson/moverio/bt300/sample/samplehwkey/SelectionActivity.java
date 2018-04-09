@@ -55,6 +55,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     public static String ID;
 
+    public static String IdOms;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +127,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public class fwork extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";   
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
@@ -134,7 +136,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                     .build();
 
             APIService apiService = retrofit.create(APIService.class);
-            final Call<List<fworkModel>> fworks = apiService.getfworks(ID);  //Return one record searching by CODE
+            final Call<List<fworkModel>> fworks = apiService.getfWorks(ID);  //Return one record searching by CODE
 
             fworks.enqueue(new Callback<List<fworkModel>>() {
                 @Override

@@ -255,10 +255,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     }
 
     private void setImage(int index) {
-        if (0 <= index && index < order.getOMSSize()) {
+        /*if (0 <= index && index < order.getOMSSize()) {
             mImageView.setImageResource(order.getImage(index));
             mImageIndex = index;
-        }
+        }*/
     }
 
     @Override

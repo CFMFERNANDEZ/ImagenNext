@@ -23,10 +23,6 @@ public class Personnel {
         this.c_id = id;
     }
 
-    public String getId() {
-        return c_id;
-    }
-
     public String getC_fname() {
         return c_fname;
     }
@@ -58,4 +54,8 @@ public class Personnel {
     public String getC_image() { return c_image; }
 
     public void setC_image(String c_image) { this.c_image = c_image; }
+
+    public String getC_id() {
+        return c_id;
+    }
 }
