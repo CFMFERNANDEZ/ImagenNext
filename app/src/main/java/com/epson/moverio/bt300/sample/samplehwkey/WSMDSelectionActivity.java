@@ -166,8 +166,11 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             }
         }
         //new loadJSON().execute();
-        QrScanner();
-
+        setContentView(R.layout.activity_wsmdselection);
+        personnelName = (TextView)findViewById(R.id.personnel_name);
+        personnelName = (TextView)findViewById(R.id.personnel_name);
+        personnelName.setText("Wellcome, press right button to scan your personal id.");
+        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
     }
 
     @Override
@@ -208,7 +211,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         @Override
         protected Void doInBackground(Void... voids){
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            String server = prefs.getString("cf_server", "192.168.1.166");
+            String server = prefs.getString("cf_server", "192.168.1.181");
             Log.d("SERVER", server);
             final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
 
@@ -246,8 +249,8 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                                     Image image = response.body().get(0);
                                     personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
                                     personnelPhoto.setImageBitmap(image.getImage());
-                                    personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
-                                    personnelPhoto.setImageResource(R.drawable.bordeau);
+//                                    personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
+//                                    personnelPhoto.setImageResource(R.drawable.bordeau);
                                 }else{
                                     Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
                                 }

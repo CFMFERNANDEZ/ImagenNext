@@ -1,6 +1,7 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatDelegate;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,12 +52,24 @@ public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
         asmCode = (TextView) rowView.findViewById(R.id.mfseq_asmcode);
         quantity = (TextView) rowView.findViewById(R.id.mfseq_quantity);
         lotSerial = (TextView) rowView.findViewById(R.id.mfseq_serialn);
+        status = (ImageView) rowView.findViewById(R.id.mfseq_status);
 
         asmDscr.setText(mfseqOrders.get(i).getAsm_dscr());
         asmCode.setText(mfseqOrders.get(i).getAsm_code());
         quantity.setText(mfseqOrders.get(i).getQty());
         lotSerial.setText(mfseqOrders.get(i).getLotno());
-
+        if( i%2 == 0){
+            rowView.setBackgroundResource(R.color.smart_alfa10);
+        }else{
+            rowView.setBackgroundResource(R.color.transparent);
+        }
+        if( mfseqOrders.get(i).getStatus_dscr().contains("process") ){
+            status.setImageResource(R.drawable.process);
+        }else if( mfseqOrders.get(i).getStatus_dscr().contains("Closed") ){
+            status.setImageResource(R.drawable.closed);
+        }else if( mfseqOrders.get(i).getStatus_dscr().contains("Open") ){
+            status.setImageResource(R.drawable.open);
+        }
         return rowView;
     }
 }
