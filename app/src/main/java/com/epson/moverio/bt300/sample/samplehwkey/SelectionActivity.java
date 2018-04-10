@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -59,10 +60,14 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     public static String IdOms;
 
+    private static String font_path = "font/CELLFUSION.TTF";
+    private static Typeface TF;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection);
+        TF = Typeface.createFromAsset(getAssets(),font_path);
         //Immersive mode
         mContentView = findViewById(R.id.WSLabel);
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -74,13 +79,16 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
         //HERE WE READ THE VALUE SENDED PREVIUSLY
         WSMDmodel WSMD  = (WSMDmodel) getIntent().getSerializableExtra("WSMD");
+
         if( WSMD != null){
             wsmdText = (TextView)findViewById(R.id.WSLabel);
+            wsmdText.setTypeface(TF);
             wsmdText.setText(WSMD.getC_code()+ "-"+WSMD.getC_dscr());
         }
         Personnel actualPerson  = (Personnel) getIntent().getSerializableExtra("Person");
         if(actualPerson != null){
             personText =( TextView)findViewById(R.id.selection_personname);
+            personText.setTypeface(TF);
             personText.setText( actualPerson.getC_fname() +" "+ actualPerson.getC_lname() );
         }
         OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");

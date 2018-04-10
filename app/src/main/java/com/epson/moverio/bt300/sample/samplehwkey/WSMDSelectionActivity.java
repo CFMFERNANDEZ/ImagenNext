@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -144,6 +145,8 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     private static String indMessage = "Press right button to scan your workstation.";
     private APIService apiService;
 
+    private static String font_path = "font/CELLFUSION.TTF";
+    private static Typeface TF;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,7 +171,16 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         //new loadJSON().execute();
         setContentView(R.layout.activity_wsmdselection);
         personnelName = (TextView)findViewById(R.id.personnel_name);
-        personnelName = (TextView)findViewById(R.id.personnel_name);
+        personnelCode= (TextView)findViewById(R.id.personnel_code);
+        personnelEmail = (TextView)findViewById(R.id.personnel_email);
+        message = (TextView)findViewById(R.id.wsmd_message);
+
+        TF = Typeface.createFromAsset(getAssets(),font_path);
+        personnelName.setTypeface(TF);
+        personnelCode.setTypeface(TF);
+        personnelEmail.setTypeface(TF);
+        message.setTypeface(TF);
+
         personnelName.setText("Wellcome, press right button to scan your personal id.");
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
     }
@@ -182,6 +194,8 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             personnelCode = (TextView)findViewById(R.id.personnel_code);
             personnelEmail = (TextView)findViewById(R.id.personnel_email);
             message = (TextView)findViewById(R.id.wsmd_message);
+
+
 
             personnelName.setText(personSelected.getC_fname()+" "+personSelected.getC_lname());
             personnelCode.setText(personSelected.getC_code());
@@ -211,7 +225,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         @Override
         protected Void doInBackground(Void... voids){
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            String server = prefs.getString("cf_server", "192.168.1.181");
+            String server = prefs.getString("cf_server", "192.168.1.166");
             Log.d("SERVER", server);
             final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
 
@@ -234,6 +248,12 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                         personnelCode = (TextView)findViewById(R.id.personnel_code);
                         personnelEmail = (TextView)findViewById(R.id.personnel_email);
                         message = (TextView)findViewById(R.id.wsmd_message);
+
+                        TF = Typeface.createFromAsset(getAssets(),font_path);
+                        personnelName.setTypeface(TF);
+                        personnelCode.setTypeface(TF);
+                        personnelEmail.setTypeface(TF);
+                        message.setTypeface(TF);
 
                         personnelName.setText(personSelected.getC_fname()+" "+personSelected.getC_lname());
                         personnelCode.setText(personSelected.getC_code());
