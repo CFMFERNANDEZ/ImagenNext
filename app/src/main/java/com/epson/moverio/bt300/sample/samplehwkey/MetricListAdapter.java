@@ -33,7 +33,7 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
         this.metrics = metrics;
     }
 
-    public int getCount(){return metrics.size();}
+    public int getCount(){return metrics != null ? metrics.size() : 0;}
 
     public long getItemId(int position){ return 0;}
 
@@ -45,8 +45,15 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
         metricCode = (TextView)rowView.findViewById(R.id.metric_code);
         spectedQuantity = (TextView)rowView.findViewById(R.id.metric_spected);
         inputQuantity = (EditText)rowView.findViewById(R.id.metric_input);
-        metricCode.setText(metrics.get(i).getMeasure_code());
-        spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
+        if(metrics != null){
+            metricCode.setText(metrics.get(i).getMeasure_code());
+            spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
+        }
+        if( i%2 == 0){
+            rowView.setBackgroundResource(R.color.smart_alfa10);
+        }else{
+            rowView.setBackgroundResource(R.color.transparent);
+        }
         return rowView;
     }
 }

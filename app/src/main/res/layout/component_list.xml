@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/component_list_image"
-        android:layout_width="50dip"
-        android:layout_height="50dip"
+        android:layout_width="70dip"
+        android:layout_height="70dip"
         android:background="@color/smart_text"
         android:src="@drawable/component"/>
 
@@ -23,6 +23,7 @@
         android:layout_marginLeft="5dip"
         android:textColor="@color/smartAccent"
         android:textStyle="bold"
+        android:textSize="25sp"
         />
 
     <TextView
@@ -33,13 +34,14 @@
         android:layout_below="@id/component_code"
         android:textColor="@color/smartAccent"
         android:layout_marginLeft="5dip"
+        android:textSize="25sp"
         />
 
     <TextView
         android:id="@+id/component_quantity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="32pt"
+        android:textSize="35sp"
         android:layout_alignParentRight="true"
         android:textColor="@color/smartAccent"
         />

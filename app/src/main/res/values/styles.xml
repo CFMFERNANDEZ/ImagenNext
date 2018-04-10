@@ -27,7 +27,7 @@
     <style name="FullscreenSmart" parent="AppTheme">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:textColor">@color/smart_text</item>
+        <item name="android:textColor">@color/smartAccent</item>
         <item name="android:windowBackground">@color/smart_background</item>
         <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>

@@ -85,68 +85,11 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 }
             }
         }
-
         if(fworkActual == null){
             fworkActual = fworks.getList().get(0);
             fworkActual.setC_first_event("true");
         }
-        fworkActual = fworks.getList().get(0);
-
-        /**
-         * ALERT CONSTRUCTOR
-         * */
-//        components = new ArrayList();
-//        components.add(new Component("00-001", "Axis X", 1, ""));
-//        components.add(new Component("00-002", "Axis Y", 2, ""));
-//        components.add(new Component("00-003", "Screw 3/16", 3, ""));
-//        components.add(new Component("00-004", "Screw Driver", 2, ""));
-//        components.add(new Component("00-005", "Gear 5", 1, ""));
-//        components.add(new Component("00-006", "Stopper 2", 2, ""));
-
-        ComponentListAdapter adapterList = new ComponentListAdapter(this, fworkActual.getComponent());
-        AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
-        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-        componentView = inflater.inflate(R.layout.component_alert_layout, null);
-        listViewComponent = (ListView)componentView.findViewById(R.id.componente_list);
-        listViewComponent.setAdapter(adapterList);
-        builder.setView(componentView);
-        builder.setTitle("Component list");
-        builder.setIcon(R.drawable.i7938);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                setImmersive();
-            }
-        });
-        builder.setCancelable(false);
-        alertComponent = builder.create();
-
-        /*ALERT METRICS*/
-//        metrics = new ArrayList();
-//        metrics.add(new Metric("radio", 15, 0));
-//        metrics.add(new Metric("resistance", 0.5, 0));
-//        metrics.add(new Metric("tolerance", 1, 0));
-//        metrics.add(new Metric("height", 5, 0));
-
-
-        MetricListAdapter metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
-        AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
-        LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
-        metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);
-        listViewMetric = (ListView)metricView.findViewById(R.id.metrics_list);
-        listViewMetric.setAdapter(metricAdapter);
-        metricBuilder.setView(metricView);
-        metricBuilder.setTitle("Metric list");
-        metricBuilder.setIcon(R.drawable.i7938);
-        metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                setImmersive();
-            }
-        });
-        metricBuilder.setCancelable(false);
-        alertMetric = metricBuilder.create();
-        new omsPicture().execute();
+        updateByFwork();
     }
 
     public void setImmersive(){
@@ -222,7 +165,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     public class nextOms extends AsyncTask<Void,Void,Void>{
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.181");
+            final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
@@ -241,6 +186,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                          if(mImageIndex != fworks.getList().size()) {
                             fworkActual = fworks.getList().get(mImageIndex);
                             fworkActual.setC_first_event("true");
+                            updateByFwork();
                         }else{
                             TPCDialog();
                         }
@@ -306,7 +252,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         } else if (mImageIndex < 0) {
             mImageIndex = order.getOMSSize() - 1;
         }
-        setImage(mImageIndex);
     }
 
     private void TPCDialog(){
@@ -352,13 +297,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         tpcDialog.show();
     }
 
-    private void setImage(int index) {
-        /*if (0 <= index && index < order.getOMSSize()) {
-            mImageView.setImageResource(order.getImage(index));
-            mImageIndex = index;
-        }*/
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -399,5 +337,54 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             });
             return null;
         }
+    }
+
+    public void updateByFwork(){
+        //Update image
+        new omsPicture().execute();
+        //Update metrics
+        createMetricAlert();
+        //Update Component
+        createComponentAlert();
+    }
+
+    public void createComponentAlert(){
+        ComponentListAdapter adapterList = new ComponentListAdapter(this, fworkActual.getComponent());
+        AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        componentView = inflater.inflate(R.layout.component_alert_layout, null);
+        listViewComponent = (ListView)componentView.findViewById(R.id.componente_list);
+        listViewComponent.setAdapter(adapterList);
+        builder.setView(componentView);
+        builder.setTitle("Component list");
+        builder.setIcon(R.drawable.list_icon);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        builder.setCancelable(false);
+        alertComponent = builder.create();
+    }
+
+    public void createMetricAlert(){
+        MetricListAdapter metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
+        AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
+        metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);
+        listViewMetric = (ListView)metricView.findViewById(R.id.metrics_list);
+        listViewMetric.setAdapter(metricAdapter);
+        metricBuilder.setView(metricView);
+        metricBuilder.setTitle("Metric list");
+        metricBuilder.setIcon(R.drawable.list_icon);
+        metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        metricBuilder.setCancelable(false);
+        alertMetric = metricBuilder.create();
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CellFusion movil</string>
+    <string name="app_name">CellFusion</string>
 
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
@@ -9,7 +9,7 @@
 
     <string name="title_activity_order_screen">OrderScreenActivity</string>
 
-    <string name="title_activity_wsmdselection">CellFusion movil</string>
+    <string name="title_activity_wsmdselection">CellFusion</string>
     <string name="wellcome_msg">Select or Scann your WSMD code</string>
 
     <string name="title_activity_fullscreen">FullscreenActivity</string>

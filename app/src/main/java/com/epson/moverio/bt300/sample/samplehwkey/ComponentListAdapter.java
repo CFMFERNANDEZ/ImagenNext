@@ -30,7 +30,7 @@ public class ComponentListAdapter extends ArrayAdapter<Component>{
     }
 
     public int getCount(){
-        return components.size();
+        return components != null? components.size() : 0;
     }
 
     public long getItemId(int position) {
@@ -45,10 +45,16 @@ public class ComponentListAdapter extends ArrayAdapter<Component>{
         componentCode = (TextView) rowView.findViewById(R.id.component_code);
         componentDscr = (TextView)rowView.findViewById(R.id.component_dscr);
         componentQuantity = (TextView)rowView.findViewById(R.id.component_quantity);
-
-        componentCode.setText(components.get(i).getCode());
-        componentDscr.setText(components.get(i).getDscr());
-        componentQuantity.setText(components.get(i).getQuantity()+"");
+        if(components != null){
+            componentCode.setText(components.get(i).getCode());
+            componentDscr.setText(components.get(i).getDscr());
+            componentQuantity.setText(components.get(i).getQuantity()+"");
+        }
+        if( i%2 == 0){
+            rowView.setBackgroundResource(R.color.smart_alfa10);
+        }else{
+            rowView.setBackgroundResource(R.color.transparent);
+        }
         return rowView;
     }
 }
