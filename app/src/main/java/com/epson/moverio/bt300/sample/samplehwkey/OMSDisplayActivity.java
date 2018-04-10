@@ -12,8 +12,10 @@
 
 package com.epson.moverio.bt300.sample.samplehwkey;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -33,6 +35,7 @@ import com.google.zxing.Result;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -62,6 +65,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private fworkModel fworkActual;
     private fworkModelList fworks;
     private APIService apiService;
+    private HashMap<String, Image> mapImages;
+    private String mfseqId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +75,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
-
+        mfseqId = getIntent().getStringExtra("mfseq_id");
         order = (OrdersModel) getIntent().getSerializableExtra("order");
         mSpeechRecognizerManager = new SpeechRecognizerManager(this);
         mSpeechRecognizerManager.setOnResultListner(this);
@@ -84,7 +89,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     fworkActual = o;
                 }
             }
+            Log.d("FWORK BEGIN", o.getC_Id());
         }
+        mapImages = new HashMap<>();
         if(fworkActual == null){
             fworkActual = fworks.getList().get(0);
             fworkActual.setC_first_event("true");
@@ -113,13 +120,17 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 }
             }else if (command.toLowerCase().contains("next")){
                 mImageIndex++;
-                changeImage();
+                new nextOms().execute();
+                updateByFwork();
             }else  if (command.toLowerCase().contains("back") || command.toLowerCase().contains("previuos")){
                 mImageIndex--;
-                changeImage();
+                updateByFwork();
             }else  if (command.toLowerCase().contains("confirm") || command.toLowerCase().contains("PC") ||
                     command.toLowerCase().contains("end") || command.toLowerCase().contains("pipc")){
                 tpcDialog.dismiss();
+                Intent resultIntent = getIntent();
+                resultIntent.putExtra("result",mfseqId);
+                setResult(Activity.RESULT_OK, resultIntent);
                 super.finish();
             }
         }
@@ -142,11 +153,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_DPAD_LEFT:
                     mImageIndex--;
-                    changeImage();
+                    updateByFwork();
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     mImageIndex++;
                     new nextOms().execute();
+                    updateByFwork( );
                     break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
@@ -183,10 +195,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 public void onResponse(Call<List<String>> call, Response<List<String>> response) {
                     if(response.isSuccessful() && response.body().size() > 0) {
                         Log.d("SUCCESS",response+"");
-                         if(mImageIndex != fworks.getList().size()) {
-                            fworkActual = fworks.getList().get(mImageIndex);
-                            fworkActual.setC_first_event("true");
-                            updateByFwork();
+                         if(mImageIndex != fworks.getList().size()-1) {
+                             fworkActual.setC_first_event("true");
                         }else{
                             TPCDialog();
                         }
@@ -202,55 +212,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
 
             return null;
-        }
-    }
-
-    private void changeImage() {
-        Log.d("ON CHANGE IMAGE", mImageIndex+"");
-        if (order.getOMSSize() <= mImageIndex) {
-
-            /*TPC DIALOG*/
-            AlertDialog.Builder tpcBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
-            LayoutInflater tpcInflater = LayoutInflater.from(getApplicationContext());
-            tpcView = tpcInflater.inflate(R.layout.tpc_alert_layout, null);
-            ImageView tpcIcon = (ImageView)tpcView.findViewById(R.id.tpc_image);
-            tpcIcon.setImageResource(R.drawable.tpcicon);
-            TextView tpcCode = (TextView)tpcView.findViewById(R.id.tpc_ordercode);
-            tpcCode.setText(order.getAsm_code());
-            TextView tpcDscr = (TextView)tpcView.findViewById(R.id.tpc_orderdscr);
-            tpcDscr.setText(order.getAsm_dscr());
-            TextView tpcMessage = (TextView)tpcView.findViewById(R.id.tpc_message);
-            tpcMessage.setText("Confirm your TPC.");
-            tpcBuilder.setView(tpcView);
-            tpcBuilder.setTitle("TPC Confirmation.");
-            tpcBuilder.setIcon(R.drawable.ok);
-            tpcBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    setImmersive();
-                }
-            });
-            tpcBuilder.setCancelable(false);
-            tpcDialog = tpcBuilder.create();
-            tpcDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                @Override
-                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                    if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                        switch (event.getKeyCode()) {
-                            case KeyEvent.KEYCODE_DPAD_UP:
-                                mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
-                                mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    return false;
-                }
-            });
-            tpcDialog.show();
-        } else if (mImageIndex < 0) {
-            mImageIndex = order.getOMSSize() - 1;
         }
     }
 
@@ -273,7 +234,11 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         tpcBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                setImmersive();
+                tpcDialog.dismiss();
+                Intent resultIntent = getIntent();
+                resultIntent.putExtra("result",mfseqId);
+                setResult(Activity.RESULT_OK, resultIntent);
+                OMSDisplayActivity.this.finish();
             }
         });
         tpcBuilder.setCancelable(false);
@@ -283,7 +248,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (event.getKeyCode()) {
-                        case KeyEvent.KEYCODE_DPAD_UP:
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
                             break;
@@ -323,9 +288,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {
                     if(response.isSuccessful()&& response.body().size() > 0) {
                         Image image = response.body().get(0);
-                        Log.d("IMAGE", image.getImage_1());
                         mImageView = (ImageView)findViewById(R.id.oms_image);
                         mImageView.setImageBitmap(image.getImage());
+                        mapImages.put(fworkActual.getC_Id(), image);
                     }else{
                         Toast.makeText(getApplicationContext(), "Cant load image", Toast.LENGTH_LONG).show();
                     }
@@ -341,7 +306,15 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
     public void updateByFwork(){
         //Update image
-        new omsPicture().execute();
+        fworkActual = fworks.getList().get(mImageIndex);
+        Log.d("FWORK_IMAGE", fworkActual.getC_Id()+"__"+fworkActual.getOms_path());
+        Image image = mapImages.get(fworkActual.getC_Id());
+        if( image == null ){
+            new omsPicture().execute();
+        }else{
+            mImageView = (ImageView)findViewById(R.id.oms_image);
+            mImageView.setImageBitmap(image.getImage());
+        }
         //Update metrics
         createMetricAlert();
         //Update Component

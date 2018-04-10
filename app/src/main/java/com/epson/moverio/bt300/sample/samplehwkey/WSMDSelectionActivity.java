@@ -194,9 +194,6 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             personnelCode = (TextView)findViewById(R.id.personnel_code);
             personnelEmail = (TextView)findViewById(R.id.personnel_email);
             message = (TextView)findViewById(R.id.wsmd_message);
-
-
-
             personnelName.setText(personSelected.getC_fname()+" "+personSelected.getC_lname());
             personnelCode.setText(personSelected.getC_code());
             personnelEmail.setText(personSelected.getC_email());
@@ -287,7 +284,8 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                 }
                 @Override
                 public void onFailure(Call<List<Personnel>> call, Throwable t) {
-                    Log.e("ERROR", t.toString());
+                    Toast.makeText(getApplicationContext(), "Error with the server", Toast.LENGTH_LONG).show();
+                    findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                 }
             });
             return null;
@@ -452,11 +450,11 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
 
 
     public void handleResult(Result rawResult) {
+        Toast.makeText(getBaseContext(), "onResult", Toast.LENGTH_LONG).show();
+        setContentView(R.layout.activity_wsmdselection);
         ID = rawResult.getText();
         mScannerView.stopCamera();
-        setContentView(R.layout.activity_wsmdselection);
         if( !personnelLoaded){
-            setImmersive();
             new login().execute();
         }else if( !wsLoaded && personnelLoaded){
             new wsmgSelection().execute();

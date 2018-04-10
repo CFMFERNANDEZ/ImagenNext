@@ -60,7 +60,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     public static String IdOms;
 
-    private static String font_path = "font/CELLFUSION.TTF";
+    private static String font_path = "font/EUEXCF.TTF";
     private static Typeface TF;
 
     @Override
@@ -137,10 +137,10 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                             auxList.add(response.body().get(i));
                             i++;
                         }
-
                         Intent orderIntent = new Intent(getApplicationContext(), OMSDisplayActivity.class);
                         orderIntent.putExtra("order",auxOrderModel);
                         orderIntent.putExtra("fworkList", new fworkModelList(auxList));
+                        orderIntent.putExtra("mfseq_id", ID);
                         startActivity(orderIntent);
                     }else{
                         Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
@@ -287,7 +287,17 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                     break;
             }
         }
-
         return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        if(requestCode == 1){
+            if(resultCode == Activity.RESULT_OK){
+                String msg = data.getStringExtra("result");
+                Log.d("on result", msg);
+            }
+        }
     }
 }
