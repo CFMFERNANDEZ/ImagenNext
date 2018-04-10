@@ -203,7 +203,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     mImageIndex++;
-
+                    new nextOms().execute();
                     break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
@@ -238,7 +238,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 public void onResponse(Call<List<String>> call, Response<List<String>> response) {
                     if(response.isSuccessful() && response.body().size() > 0) {
                         Log.d("SUCCESS",response+"");
-                        if(mImageIndex != fworks.getList().size()) {
+                         if(mImageIndex != fworks.getList().size()) {
                             fworkActual = fworks.getList().get(mImageIndex);
                             fworkActual.setC_first_event("true");
                         }else{
