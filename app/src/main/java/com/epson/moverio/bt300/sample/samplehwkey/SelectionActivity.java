@@ -292,7 +292,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
+        Log.d("on result", "result");
         if(requestCode == 1){
             if(resultCode == Activity.RESULT_OK){
                 String msg = data.getStringExtra("result");

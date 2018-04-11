@@ -306,19 +306,21 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
     public void updateByFwork(){
         //Update image
-        fworkActual = fworks.getList().get(mImageIndex);
-        Log.d("FWORK_IMAGE", fworkActual.getC_Id()+"__"+fworkActual.getOms_path());
-        Image image = mapImages.get(fworkActual.getC_Id());
-        if( image == null ){
-            new omsPicture().execute();
-        }else{
-            mImageView = (ImageView)findViewById(R.id.oms_image);
-            mImageView.setImageBitmap(image.getImage());
+        if(mImageIndex < fworks.getList().size()){
+            fworkActual = fworks.getList().get(mImageIndex);
+            Log.d("FWORK_IMAGE", fworkActual.getC_Id()+"__"+fworkActual.getOms_path());
+            Image image = mapImages.get(fworkActual.getC_Id());
+            if( image == null ){
+                new omsPicture().execute();
+            }else{
+                mImageView = (ImageView)findViewById(R.id.oms_image);
+                mImageView.setImageBitmap(image.getImage());
+            }
+            //Update metrics
+            createMetricAlert();
+            //Update Component
+            createComponentAlert();
         }
-        //Update metrics
-        createMetricAlert();
-        //Update Component
-        createComponentAlert();
     }
 
     public void createComponentAlert(){

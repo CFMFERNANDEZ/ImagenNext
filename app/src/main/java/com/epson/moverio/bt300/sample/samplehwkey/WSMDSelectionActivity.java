@@ -368,7 +368,11 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
         setContentView(mScannerView);
         mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
-        mScannerView.startCamera();         // Start camera
+        try {
+            mScannerView.startCamera();         // Start camera
+        }catch (Exception e){
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     public static boolean hasPermissions(Context context, String... permissions) {
