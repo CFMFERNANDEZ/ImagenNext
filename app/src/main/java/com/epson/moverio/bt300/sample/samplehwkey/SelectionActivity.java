@@ -115,7 +115,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public class fwork extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.181:8080/WebServicesCellFusion/";
+            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
