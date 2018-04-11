@@ -329,8 +329,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         listViewComponent = (ListView)componentView.findViewById(R.id.componente_list);
         listViewComponent.setAdapter(adapterList);
         builder.setView(componentView);
-        builder.setTitle("Component list");
-        builder.setIcon(R.drawable.list_icon);
+        builder.setTitle("COMPONENT LIST");
+        builder.setIcon(R.drawable.componentlist);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

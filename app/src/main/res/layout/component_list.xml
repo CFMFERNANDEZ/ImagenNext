@@ -13,7 +13,7 @@
         android:layout_width="70dip"
         android:layout_height="70dip"
         android:background="@color/smart_text"
-        android:src="@drawable/component"/>
+        android:src="@drawable/componentv2"/>
 
     <TextView
         android:id="@+id/component_code"
