@@ -18,6 +18,9 @@
 
     <color name="smart_alfa10">#0b000000</color>
 
+    <color name="metricColorRed">#c25f5f</color>
+    <color name="metricColorGreen">#73b67a</color>
+
     <color name="smartTransparent">#38d6d6d6</color>
     <color name="transparent">#00494949</color>
     <color name="black">#0a494949</color>

@@ -22,9 +22,8 @@
         android:textStyle="bold"
         android:textSize="25sp"
         />
-
     <TextView
-        android:id="@+id/metric_spected"
+        android:id="@+id/metric_min"
         android:layout_toRightOf="@+id/metric_list_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,10 +32,22 @@
         android:textSize="25sp"
         />
 
+
+    <TextView
+        android:id="@+id/metric_spected"
+        android:layout_toRightOf="@+id/metric_list_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/metric_code"
+        android:layout_marginLeft="100dip"
+        android:textSize="25sp"
+        />
+
     <EditText
         android:id="@+id/metric_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:singleLine="true"
         android:layout_alignParentRight="true"
         />
 
