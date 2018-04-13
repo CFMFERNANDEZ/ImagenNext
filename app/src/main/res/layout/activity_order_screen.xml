@@ -38,7 +38,24 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:src="@drawable/logocf"
-            android:layout_margin="16dp" />
+            android:layout_margin="10dp" />
+
+        <ImageView
+            android:id="@+id/iconMet"
+            android:layout_below="@id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/metrics"
+            />
+        <ImageView
+            android:id="@+id/iconMat"
+            android:layout_below="@id/iconMet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/component"
+            />
 
     </RelativeLayout>
 

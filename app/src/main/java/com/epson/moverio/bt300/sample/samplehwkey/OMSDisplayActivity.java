@@ -67,6 +67,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private APIService apiService;
     private HashMap<String, Image> mapImages;
     private String mfseqId;
+    private View iconMet;
+    private View iconMat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -317,7 +319,24 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
             if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
                 alertMetric.show();
+                iconMet = (ImageView) findViewById(R.id.iconMet);
+                iconMet.setVisibility(View.VISIBLE);
             }
+            else {
+                iconMet = (ImageView) findViewById(R.id.iconMet);
+                iconMet.setVisibility(View.INVISIBLE);
+            }
+
+            if(fworkActual.getComponent() != null && fworkActual.getComponent().size() > 0){
+                alertMetric.show();
+                iconMat = (ImageView) findViewById(R.id.iconMat);
+                iconMat.setVisibility(View.VISIBLE);
+            }
+            else {
+                iconMat = (ImageView) findViewById(R.id.iconMat);
+                iconMat.setVisibility(View.INVISIBLE);
+            }
+
         }
     }
 
@@ -350,7 +369,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         listViewMetric.setAdapter(metricAdapter);
         metricBuilder.setView(metricView);
         metricBuilder.setTitle("Metric list");
-        metricBuilder.setIcon(R.drawable.list_icon);
+        metricBuilder.setIcon(R.drawable.metriclist);
         metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
