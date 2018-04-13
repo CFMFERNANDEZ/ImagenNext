@@ -6,11 +6,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -115,7 +117,10 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public class fwork extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            final String url = "http://192.168.1.166:8080/WebServicesCellFusion/";
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.166");
+            Log.d("SERVER", server);
+            final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)

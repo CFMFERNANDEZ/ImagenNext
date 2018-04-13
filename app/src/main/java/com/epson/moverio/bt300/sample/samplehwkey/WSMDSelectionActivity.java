@@ -142,7 +142,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     private static TextView personnelCode;
     private static TextView personnelEmail;
     private static TextView message;
-    private static String indMessage = "Press right button to scan your workstation.";
+    private static String indMessage = "Press the right button to scan your workstation.";
     private APIService apiService;
 
     private static String font_path = "font/CELLFUSION.TTF";
@@ -163,13 +163,12 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         int currentapiVersion = android.os.Build.VERSION.SDK_INT;
         if (currentapiVersion >= android.os.Build.VERSION_CODES.M) {
             if (hasPermissions(this, PERMISSIONS)) {
-                QrScanner();
             } else {
                 ActivityCompat.requestPermissions(this, PERMISSIONS, ALL_PERMISSION);
             }
         }
         //new loadJSON().execute();
-        setContentView(R.layout.activity_wsmdselection);
+//        setContentView(R.layout.activity_wsmdselection);
         personnelName = (TextView)findViewById(R.id.personnel_name);
         personnelCode= (TextView)findViewById(R.id.personnel_code);
         personnelEmail = (TextView)findViewById(R.id.personnel_email);
@@ -181,8 +180,9 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         personnelEmail.setTypeface(TF);
         message.setTypeface(TF);
 
-        personnelName.setText("Wellcome, press right button to scan your personal id.");
+        personnelName.setText("Welcome, press the right button to scan your personnel id.");
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        QrScanner();
     }
 
     @Override
@@ -359,17 +359,17 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     }
 
     public static OkHttpClient okHttpClient = new OkHttpClient.Builder()
+
             .readTimeout(1200, TimeUnit.SECONDS)
             .connectTimeout(1200, TimeUnit.SECONDS)
             .build();
 
     public void QrScanner(){
-        Log.d("Context QR",this.toString());
         mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
-        setContentView(mScannerView);
         mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
+        setContentView(mScannerView);
         try {
-            mScannerView.startCamera();         // Start camera
+            mScannerView.startCamera(0);         // Start camera
         }catch (Exception e){
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
