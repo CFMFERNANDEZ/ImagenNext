@@ -25,9 +25,9 @@
                 android:maxWidth="600sp"
                 android:layout_alignParentStart="true"
                 android:textColor="@color/smartAccent"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp"
-                android:textSize="30sp" />
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="15dp"
+                android:textSize="32sp" />
 
             <TextView
                 android:id="@+id/selection_personname"
@@ -35,15 +35,16 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/WSLabel"
                 android:textColor="@color/smartAccent"
-                android:layout_marginLeft="10dp"
-                android:textSize="30sp" />
+                android:layout_marginLeft="15dp"
+                android:textSize="26sp" />
 
             <ImageView
                 android:id="@+id/imageView2"
                 android:layout_width="match_parent"
                 android:layout_height="110dp"
                 android:layout_alignStart="@+id/WSLabel"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="15dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitEnd"
                 android:src="@drawable/logocf" />

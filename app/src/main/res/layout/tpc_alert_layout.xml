@@ -3,40 +3,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/tpc_image"
-        android:layout_width="50dip"
-        android:layout_height="50dip"
-        android:background="@color/smart_text"
-        android:src="@drawable/metrics"/>
-
     <TextView
         android:id="@+id/tpc_ordercode"
-        android:layout_toRightOf="@+id/tpc_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dip"
+        android:layout_marginLeft="10dip"
+        android:textColor="@color/smartAccent"
         android:textStyle="bold"
+        android:textSize="30sp"
         />
 
     <TextView
         android:id="@+id/tpc_orderdscr"
-        android:layout_toRightOf="@+id/tpc_image"
         android:layout_below="@+id/tpc_ordercode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dip"
-        android:textStyle="bold"
+        android:textColor="@color/smartAccent"
+        android:layout_marginLeft="10dip"
+        android:textSize="25sp"
         />
 
     <TextView
         android:id="@+id/tpc_message"
-        android:layout_toRightOf="@+id/tpc_image"
         android:layout_below="@+id/tpc_orderdscr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dip"
-        android:textStyle="bold"
+        android:textColor="@color/smartAccent"
+        android:layout_marginTop="15dip"
+        android:layout_marginLeft="10dip"
+        android:textSize="25sp"
         />
 
 

@@ -15,7 +15,6 @@ public class PreferenceCustomFragment extends PreferenceFragment implements Shar
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updatePreference(findPreference(key), key);

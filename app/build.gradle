@@ -37,5 +37,5 @@ dependencies {
     // JSON Parsing
     compile 'com.google.code.gson:gson:2.8.2'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
-    implementation files('libs/gradle-wrapper.jar')
+    compile 'com.android.support:design:26.1.0'
 }

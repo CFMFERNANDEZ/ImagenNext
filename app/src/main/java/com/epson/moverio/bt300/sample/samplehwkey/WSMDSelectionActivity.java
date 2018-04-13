@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -16,7 +14,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -144,8 +141,9 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
     private static TextView message;
     private static String indMessage = "Press the right button to scan your workstation.";
     private APIService apiService;
+    private Image personnelImage;
 
-    private static String font_path = "font/CELLFUSION.TTF";
+    private static String font_path = "font/EUEXCF.TTF";
     private static Typeface TF;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,8 +165,12 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                 ActivityCompat.requestPermissions(this, PERMISSIONS, ALL_PERMISSION);
             }
         }
-        //new loadJSON().execute();
-//        setContentView(R.layout.activity_wsmdselection);
+        //ActionBar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowHomeEnabled(true);
+        actionBar.setIcon(R.mipmap.cf_logo);
+        personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
+        personnelPhoto.setVisibility(View.GONE);
         personnelName = (TextView)findViewById(R.id.personnel_name);
         personnelCode= (TextView)findViewById(R.id.personnel_code);
         personnelEmail = (TextView)findViewById(R.id.personnel_email);
@@ -182,18 +184,29 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
 
         personnelName.setText("Welcome, press the right button to scan your personnel id.");
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        QrScanner();
+//        QrScanner();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if(personSelected != null){
-            personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
+            TF = Typeface.createFromAsset(getAssets(),font_path);
+            if( personnelImage != null){
+                personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
+                personnelPhoto.setVisibility(View.VISIBLE);
+                personnelPhoto.setImageBitmap(personnelImage.getImage());
+            }
             personnelName = (TextView)findViewById(R.id.personnel_name);
             personnelCode = (TextView)findViewById(R.id.personnel_code);
             personnelEmail = (TextView)findViewById(R.id.personnel_email);
             message = (TextView)findViewById(R.id.wsmd_message);
+
+            personnelName.setTypeface(TF);
+            personnelCode.setTypeface(TF);
+            personnelEmail.setTypeface(TF);
+            message.setTypeface(TF);
+
             personnelName.setText(personSelected.getC_fname()+" "+personSelected.getC_lname());
             personnelCode.setText(personSelected.getC_code());
             personnelEmail.setText(personSelected.getC_email());
@@ -225,16 +238,13 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             String server = prefs.getString("cf_server", "192.168.1.166");
             Log.d("SERVER", server);
             final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
-
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
                     //.client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
-
             apiService = retrofit.create(APIService.class);
             Call<List<Personnel>> person = apiService.getUsersByCode(ID);  //Return one record searching by CODE
-
             person.enqueue(new Callback<List<Personnel>>() {
                 @Override
                 public void onResponse(Call<List<Personnel>> call, Response<List<Personnel>> response) {
@@ -262,14 +272,18 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                         foto.enqueue(new Callback<List<Image>>() {
                             @Override
                             public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {
+                                personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
                                 if(response.isSuccessful()&& response.body().size() > 0) {
-                                    Image image = response.body().get(0);
-                                    personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
-                                    personnelPhoto.setImageBitmap(image.getImage());
-//                                    personnelPhoto = (ImageView)findViewById(R.id.personnel_image);
-//                                    personnelPhoto.setImageResource(R.drawable.bordeau);
+                                    personnelImage = response.body().get(0);
+                                    if(personnelPhoto != null){
+                                        personnelPhoto.setVisibility(View.VISIBLE);
+                                        personnelPhoto.setImageBitmap(personnelImage.getImage());
+                                    }
                                 }else{
-                                    Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
+                                    if(personnelPhoto != null){
+                                        personnelPhoto.setVisibility(View.VISIBLE);
+                                        personnelPhoto.setImageResource(R.drawable.avatar);
+                                    }
                                 }
                             }
 
@@ -307,12 +321,11 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
 
             apiService = retrofit.create(APIService.class);
             Call<List<OrdersModel>> orders = apiService.getOrdersByWSMD(ID);  //Return one record searching by CODE
-
             orders.enqueue(new Callback<List<OrdersModel>>() {
                 @Override
                 public void onResponse(Call<List<OrdersModel>> call, Response<List<OrdersModel>> response) {
                     if(response.isSuccessful()&& response.body().size() > 0) {
-
+                        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                         String wsmdId = ID;
                         wsmdId = wsmdId.replace("[WSMD:", "");
                         wsmdId = wsmdId.replace("]", "");
@@ -324,7 +337,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                                     orderIntent.putExtra("WSMD", (WSMDmodel)response.body().get(0));
                                     startActivity(orderIntent);
                                 }else{
-                                    Toast.makeText(getApplicationContext(), "Workstation error", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Workstation not valid", Toast.LENGTH_LONG).show();
                                 }
                             }
                             @Override
@@ -342,7 +355,6 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                         orderIntent = new Intent(getBaseContext(),SelectionActivity.class);
                         orderIntent.putExtra("Person", personSelected);
                         orderIntent.putExtra("Orders",new OrdersModelList(auxList) );
-//                        startActivity(orderIntent);
 
                     }else{
                         Toast.makeText(getApplicationContext(), "Workstation error", Toast.LENGTH_LONG).show();
@@ -365,13 +377,13 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             .build();
 
     public void QrScanner(){
+        Log.d("WSMD","onScanner");
         mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
         mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
         setContentView(mScannerView);
         try {
             mScannerView.startCamera(0);         // Start camera
         }catch (Exception e){
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -452,27 +464,20 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         return super.dispatchKeyEvent(event);
     }
 
-
     public void handleResult(Result rawResult) {
-        Toast.makeText(getBaseContext(), "onResult", Toast.LENGTH_LONG).show();
         setContentView(R.layout.activity_wsmdselection);
         ID = rawResult.getText();
         mScannerView.stopCamera();
         if( !personnelLoaded){
+            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
             new login().execute();
         }else if( !wsLoaded && personnelLoaded){
+            if( personnelPhoto != null){
+                personnelPhoto.setVisibility(View.GONE);
+            }
+            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
             new wsmgSelection().execute();
-            Toast.makeText(getApplicationContext(), "Reading WS", Toast.LENGTH_LONG).show();
             wsLoaded = true;
         }
-    }
-
-    public void setImmersive(){
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 }
