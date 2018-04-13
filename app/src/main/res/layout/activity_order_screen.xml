@@ -39,6 +39,24 @@
             android:layout_height="90dp"
             app:srcCompat="@drawable/animated_voicerecog"
             />
+
+        <ImageView
+            android:id="@+id/iconMet"
+            android:layout_below="@id/animated_voice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/metrics"
+            />
+        <ImageView
+            android:id="@+id/iconMat"
+            android:layout_below="@id/iconMet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/component"
+            />
+
     </RelativeLayout>
 
 </LinearLayout >

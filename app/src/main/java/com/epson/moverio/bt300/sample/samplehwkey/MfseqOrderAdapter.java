@@ -25,6 +25,7 @@ public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
     private TextView asmCode;
     private TextView quantity;
     private TextView lotSerial;
+    private TextView eventPos;
     private ImageView status;
 
     public MfseqOrderAdapter(Context context, ArrayList<OrdersModel> mfseqOrders ){
@@ -53,11 +54,14 @@ public class MfseqOrderAdapter extends ArrayAdapter<OrdersModel> {
         quantity = (TextView) rowView.findViewById(R.id.mfseq_quantity);
         lotSerial = (TextView) rowView.findViewById(R.id.mfseq_serialn);
         status = (ImageView) rowView.findViewById(R.id.mfseq_status);
+        eventPos = (TextView) rowView.findViewById(R.id.event_pos);
+
 
         asmDscr.setText(mfseqOrders.get(i).getAsm_dscr());
         asmCode.setText(mfseqOrders.get(i).getAsm_code());
         quantity.setText(mfseqOrders.get(i).getQty());
         lotSerial.setText(mfseqOrders.get(i).getLotno());
+        eventPos.setText("Event: "+mfseqOrders.get(i).getEvent_pos());
         if( i%2 == 0){
             rowView.setBackgroundResource(R.color.smart_alfa10);
         }else{

@@ -13,6 +13,9 @@ public class OrdersModel implements Serializable {
     private String qty;
     private String asm_code;
     private String asm_dscr;
+    private String event_pos;
+    private String event_code;
+
     private final int[] IMAGES = {
             R.drawable.i7935,
             R.drawable.i7938,
@@ -21,13 +24,15 @@ public class OrdersModel implements Serializable {
             R.drawable.i7947,
     };
 
-    public OrdersModel(String id, String status_dscr, String lotno, String qty, String asm_code, String asm_dscr) {
+    public OrdersModel(String id, String status_dscr, String lotno, String qty, String asm_code, String asm_dscr, String event_pos, String event_code) {
         this.id = id;
         this.status_dscr = status_dscr;
         this.lotno = lotno;
         this.qty = qty;
         this.asm_code = asm_code;
         this.asm_dscr = asm_dscr;
+        this.asm_code = event_code;
+        this.event_pos = event_pos;
     }
 
     public String getId() {
@@ -61,4 +66,8 @@ public class OrdersModel implements Serializable {
     public int getOMSSize(){
         return IMAGES.length;
     }
+
+    public String getEvent_pos() { return event_pos; }
+
+    public String getEvent_code() { return event_code; }
 }
