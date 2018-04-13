@@ -96,7 +96,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");
         values = new ArrayList();
         for(OrdersModel o : orders.getList()){
-            values.add(new OrdersModel(o.getId(),o.getStatus_dscr(),o.getLotno(),o.getQty(),o.getAsm_code(),o.getAsm_dscr()));
+            values.add(new OrdersModel(o.getId(),o.getStatus_dscr(),o.getLotno(),o.getQty(),o.getAsm_code(),o.getAsm_dscr(),o.getEvent_pos(),o.getEvent_code()));
 
         }
         MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);

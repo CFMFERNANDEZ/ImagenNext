@@ -46,6 +46,17 @@
         />
 
     <TextView
+        android:id="@+id/event_pos"
+        android:layout_toRightOf="@+id/mfseq_image_container"
+        android:layout_below="@+id/mfseq_asmdscr"
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="250dp"
+        android:textSize="35dp"
+        android:textColor="@color/smartAccent"
+        />
+
+    <TextView
         android:id="@+id/mfseq_serialn"
         android:layout_below="@+id/mfseq_asmcode"
         android:layout_marginLeft="10dip"

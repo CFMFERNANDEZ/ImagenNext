@@ -320,6 +320,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             createMetricAlert();
             //Update Component
             createComponentAlert();
+
+            if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
+                alertMetric.show();
+            }
         }
     }
 
