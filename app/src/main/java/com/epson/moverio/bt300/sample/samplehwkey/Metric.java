@@ -12,12 +12,14 @@ public class Metric implements Serializable {
     private String measure_code;
     private String measure_htarget;
     private String measure_ltarget;
+    private String measureInput;
 
-    public Metric(String code, String dscr, String htarget, String ltarget){
+    public Metric(String code, String dscr, String htarget, String ltarget, String measure){
         this.measure_dscr = dscr;
         this.measure_code = code;
         this.measure_htarget = htarget;
         this.measure_ltarget = ltarget;
+        this.measureInput = measure;
     }
 
     public String getMeasure_dscr() {
@@ -35,4 +37,8 @@ public class Metric implements Serializable {
     public String getMeasure_ltarget() {
         return measure_ltarget;
     }
+
+    public String getMeasureInput() { return measureInput; }
+
+    public void setMeasureInput(String measureInput) { this.measureInput = measureInput; }
 }

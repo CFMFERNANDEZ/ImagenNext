@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,12 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
     private TextView inputQuantity;
     private ImageView componentImage;
 
+   /* private float met = 0;
+    private float metMin ;
+    private float metMax;
+    private View rowView = null;*/
+
+
     public MetricListAdapter(Context context, List<Metric> metrics){
         super(context, -1, metrics);
         this.context = context;
@@ -42,7 +49,7 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
     public long getItemId(int position){ return 0;}
 
     @Override
-    public View getView(int i, View view, ViewGroup parent){
+    public View getView(final int i, View view, ViewGroup parent){
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View rowView = inflater.inflate(R.layout.metrics_list, parent, false);
@@ -50,7 +57,7 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
         spectedMin = (TextView)rowView.findViewById(R.id.metric_min);
         spectedQuantity = (TextView)rowView.findViewById(R.id.metric_spected);
         inputQuantity = (EditText)rowView.findViewById(R.id.metric_input);
-        if(metrics != null){
+        if(metrics != null && metrics.get(i).getMeasureInput() == null){
             metricCode.setText(metrics.get(i).getMeasure_code());
             spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
             spectedMin.setText(metrics.get(i).getMeasure_ltarget()+"");
@@ -63,32 +70,80 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
 
                     if(actionId == EditorInfo.IME_ACTION_UNSPECIFIED){
                         Log.d("Accion", v.getText().toString()+"");
-                        float met = Float.parseFloat(v.getText().toString());
-                        float metMin = Float.parseFloat(spectedMin.getText().toString());
-                        float metMax = Float.parseFloat(spectedQuantity.getText().toString());
+                        metrics.get(i).setMeasureInput(v.getText().toString());
+                        Float met = Float.parseFloat(v.getText().toString());
+                        Float metMin = Float.parseFloat(spectedMin.getText().toString());
+                        Float metMax = Float.parseFloat(spectedQuantity.getText().toString());
                         if(met >= metMin && met <= metMax){
                             rowView.setBackgroundResource(R.color.metricColorGreen);
-
-
+                            //rowView.setBackgroundColor(0xFF00FF00);
 
                         }else {
                             rowView.setBackgroundResource(R.color.metricColorRed);
+                            //rowView.setBackgroundColor(0xFFFF0000);
                         }
                     }
                     else{
 
                     }
 
-
                     return false;
                 }
             });
         }
-        if( i%2 == 0){
-            rowView.setBackgroundResource(R.color.smart_alfa10);
-        }else{
-            rowView.setBackgroundResource(R.color.transparent);
+
+        if(metrics != null && metrics.get(i).getMeasureInput() != null){
+            metricCode.setText(metrics.get(i).getMeasure_code());
+            spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
+            spectedMin.setText(metrics.get(i).getMeasure_ltarget()+"");
+            inputQuantity.setText(metrics.get(i).getMeasureInput()+"");
+
+            Float min = Float.parseFloat(metrics.get(i).getMeasure_ltarget());
+            Float max = Float.parseFloat(metrics.get(i).getMeasure_htarget());
+            Float auxMet = Float.parseFloat(metrics.get(i).getMeasureInput());
+            paintRows(auxMet,min,max,rowView);
+
+            inputQuantity.requestFocus();
+            inputQuantity.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    boolean process = false;
+
+                    if(actionId == EditorInfo.IME_ACTION_UNSPECIFIED){
+                        Log.d("Accion", v.getText().toString()+"");
+                        Float met = Float.parseFloat(v.getText().toString());
+                        Float metMin = Float.parseFloat(spectedMin.getText().toString());
+                        Float metMax = Float.parseFloat(spectedQuantity.getText().toString());
+                        if(met >= metMin && met <= metMax){
+                            rowView.setBackgroundResource(R.color.metricColorGreen);
+                            //rowView.setBackgroundColor(0xFF00FF00);
+
+                        }else {
+                            rowView.setBackgroundResource(R.color.metricColorRed);
+                            //rowView.setBackgroundColor(0xFFFF0000);
+                        }
+                    }
+                    else{
+
+                    }
+
+                    return false;
+                }
+            });
+
         }
         return rowView;
+    }
+
+    public void paintRows(Float met, Float min, Float max, View v){
+
+        if(met >= min && met <= max){
+            v.setBackgroundResource(R.color.metricColorGreen);
+            //rowView.setBackgroundColor(0xFF00FF00);
+
+        }else {
+            v.setBackgroundResource(R.color.metricColorRed);
+            //rowView.setBackgroundColor(0xFFFF0000);
+        }
     }
 }
