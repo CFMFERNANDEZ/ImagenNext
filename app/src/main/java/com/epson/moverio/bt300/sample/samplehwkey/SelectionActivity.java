@@ -56,6 +56,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private String orderInAction;
     private ZXingScannerView mScannerView;
     String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
+    private WSMDmodel WSMD;
+    private Personnel actualPerson;
 
     public static String ID;
     public static OrdersModel auxOrderModel;
@@ -80,38 +82,29 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
         //HERE WE READ THE VALUE SENDED PREVIUSLY
-        WSMDmodel WSMD  = (WSMDmodel) getIntent().getSerializableExtra("WSMD");
-
-        if( WSMD != null){
-            wsmdText = (TextView)findViewById(R.id.WSLabel);
-            wsmdText.setTypeface(TF);
-            wsmdText.setText(WSMD.getC_code()+ "-"+WSMD.getC_dscr());
-        }
-        Personnel actualPerson  = (Personnel) getIntent().getSerializableExtra("Person");
-        if(actualPerson != null){
-            personText =( TextView)findViewById(R.id.selection_personname);
-            personText.setTypeface(TF);
-            personText.setText( actualPerson.getC_fname() +" "+ actualPerson.getC_lname() );
-        }
+        WSMD  = (WSMDmodel) getIntent().getSerializableExtra("WSMD");
+        actualPerson  = (Personnel) getIntent().getSerializableExtra("Person");
+        fillText();
         OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");
         values = new ArrayList();
         for(OrdersModel o : orders.getList()){
             values.add(new OrdersModel(o.getId(),o.getStatus_dscr(),o.getLotno(),o.getQty(),o.getAsm_code(),o.getAsm_dscr()));
 
         }
-        MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);
-        listView = (ListView) findViewById(R.id.list);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
-                Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
-                ID = item.getId();
-                auxOrderModel = item;
-                new fwork().execute();
-            }
-        });
+        createMfSeqList();
+    }
+
+    public void fillText(){
+        if( WSMD != null){
+            wsmdText = (TextView)findViewById(R.id.WSLabel);
+            wsmdText.setTypeface(TF);
+            wsmdText.setText(WSMD.getC_code()+ "-"+WSMD.getC_dscr());
+        }
+        if(actualPerson != null){
+            personText =( TextView)findViewById(R.id.selection_personname);
+            personText.setTypeface(TF);
+            personText.setText( actualPerson.getC_fname() +" "+ actualPerson.getC_lname() );
+        }
     }
 
     public class fwork extends AsyncTask<Void,Void,Void> {
@@ -146,7 +139,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                         orderIntent.putExtra("order",auxOrderModel);
                         orderIntent.putExtra("fworkList", new fworkModelList(auxList));
                         orderIntent.putExtra("mfseq_id", ID);
-                        startActivity(orderIntent);
+                        startActivityForResult(orderIntent, 100);
                     }else{
                         Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
                     }
@@ -160,24 +153,12 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         }
     }
 
-
     public void QrScanner(){
-        Log.d("Context QR",this.toString());
+        Log.d("SELECTION","onScanner");
         mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
         setContentView(mScannerView);
         mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
         mScannerView.startCamera();         // Start camera
-    }
-
-    public static boolean hasPermissions(Context context, String... permissions) {
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     @Override
@@ -200,7 +181,6 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
             mSpeechRecognizerManager = new SpeechRecognizerManager(this);
             mSpeechRecognizerManager.setOnResultListner(this);
         }
-
     }
 
     @Override
@@ -208,61 +188,29 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         OrdersModel odertoSend= null;
         for(String command:commands)
         {
-            Log.d("On googleRecResult", command);
-            if (command.toLowerCase().contains("open")){
-                if( command.toLowerCase().contains("order") || command.toLowerCase().contains("orden")){
-                    String order = "";
-                    if( command.toLowerCase().contains("cero") ){
-                        order = "0";
-                        odertoSend = values.get(0);
-                    }else if( command.toLowerCase().contains("one") ){
-                        order = "1";
-                        odertoSend = values.get(1);
-                    }else if( command.toLowerCase().contains("two") ||command.toLowerCase().contains("to")){
-                        order = "2";
-                        odertoSend = values.get(2);
-                    }else if( command.toLowerCase().contains("three") ||command.toLowerCase().contains("tree")){
-                        order = "3";
-                        odertoSend = values.get(3);
-                    }else if( command.toLowerCase().contains("four") ){
-                        order = "4";
-                        odertoSend = values.get(4);
-                    }
-                    Log.d("ON RESULT EXECUTION", odertoSend.toString());
-                    if(odertoSend != null) {
-                        Toast.makeText(this, "Do you want open the Order?" + order, Toast.LENGTH_SHORT).show();
-                        Intent orderIntent = new Intent(this, OMSDisplayActivity.class);
-                        orderIntent.putExtra("order", odertoSend);
-                        startActivity(orderIntent);
-                    }
-                    return;
-                }else if( command.toLowerCase().contains("camera") ){
-//                    Toast.makeText(this,"You will open the camera", Toast.LENGTH_SHORT).show();
-                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
-                    return;
-                }else if( command.toLowerCase().contains("scann") || command.toLowerCase().contains("scan")  || command.toLowerCase().contains("scanner") ){
-                    QrScanner();                    return;
-                }
-            }else if(command.toLowerCase().contains("scann") || command.toLowerCase().contains("scan")  || command.toLowerCase().contains("scanner")){
-                if(command.toLowerCase().contains("order") || command.toLowerCase().contains("orden") || command.toLowerCase().contains("qr") || command.toLowerCase().contains("barcode")){
-                    QrScanner();
-                }
+            if( command.toLowerCase().contains("open")  || command.toLowerCase().contains("scann") || command.toLowerCase().contains("scan")  || command.toLowerCase().contains("scanner") ||
+                    command.toLowerCase().contains("order") || command.toLowerCase().contains("orden")|| command.toLowerCase().contains("barcode")){
+                QrScanner();
+                break;
             }
         }
     }
 
     public void handleResult(Result rawResult) {
         mScannerView.stopCamera();
-        setContentView(R.layout.activity_order_screen);
+        setContentView(R.layout.activity_selection);
         for(int i = 0 ; i < values.size(); i++){
             if( values.get(i).getId().equalsIgnoreCase(rawResult.getText())){
+                setContentView(R.layout.activity_order_screen);
                 OrdersModel odertoSend = values.get(i);
                 Intent orderIntent = new Intent(this, OMSDisplayActivity.class);
                 orderIntent.putExtra("order", odertoSend);
-                startActivity(orderIntent);
+                startActivityForResult(orderIntent, 100);
             }
         }
+        fillText();
+        createMfSeqList();
+        Toast.makeText(this, "Order not valid", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -297,12 +245,32 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("on result", "result");
-        if(requestCode == 1){
+        if(requestCode == 100){
             if(resultCode == Activity.RESULT_OK){
-                String msg = data.getStringExtra("result");
-                Log.d("on result", msg);
+                String mfseqid = data.getStringExtra("mfseqid");
+                for( int i = 0; i < values.size(); i++){
+                    if( values.get(i).getId().equalsIgnoreCase(mfseqid)){
+                        values.remove(i);
+                        createMfSeqList();
+                    }
+                }
             }
         }
+    }
+
+    public void createMfSeqList(){
+        MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);
+        listView = (ListView) findViewById(R.id.list);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
+                Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
+                ID = item.getId();
+                auxOrderModel = item;
+                new fwork().execute();
+            }
+        });
     }
 }

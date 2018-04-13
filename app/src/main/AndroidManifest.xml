@@ -14,7 +14,6 @@
         android:theme="@style/SmartGlass">
         <activity
             android:name=".WSMDSelectionActivity"
-            android:label="@string/title_activity_wsmdselection"
             android:theme="@style/FullscreenSmart">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
