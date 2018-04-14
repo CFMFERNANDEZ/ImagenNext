@@ -135,6 +135,10 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
         return rowView;
     }
 
+    public List<Metric> getListMetrics(){
+        return metrics;
+    }
+
     public void paintRows(Float met, Float min, Float max, View v){
 
         if(met >= min && met <= max){

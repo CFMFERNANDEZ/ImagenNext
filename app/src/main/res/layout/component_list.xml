@@ -43,15 +43,5 @@
         android:layout_alignParentRight="true"
         android:textColor="@color/smartAccent"
         />
-    <TextView
-        android:id="@+id/text_qty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/component_quantity"
-        android:textSize="30sp"
-        android:text="Qty"
-        android:layout_alignParentRight="true"
-        android:textColor="@color/smartAccent"
-        />
 
 </RelativeLayout>

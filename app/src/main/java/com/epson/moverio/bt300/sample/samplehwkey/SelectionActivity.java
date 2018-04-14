@@ -97,13 +97,17 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public void fillText(){
         if( WSMD != null){
             wsmdText = (TextView)findViewById(R.id.WSLabel);
-            wsmdText.setTypeface(TF);
-            wsmdText.setText(WSMD.getC_code()+ "-"+WSMD.getC_dscr());
+            if(wsmdText != null) {
+                wsmdText.setTypeface(TF);
+                wsmdText.setText(WSMD.getC_code() + "-" + WSMD.getC_dscr());
+            }
         }
         if(actualPerson != null){
             personText =( TextView)findViewById(R.id.selection_personname);
-            personText.setTypeface(TF);
-            personText.setText( actualPerson.getC_fname() +" "+ actualPerson.getC_lname() );
+            if(personText != null){
+                personText.setTypeface(TF);
+                personText.setText( actualPerson.getC_fname() +" "+ actualPerson.getC_lname() );
+            }
         }
     }
 
@@ -199,19 +203,25 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public void handleResult(Result rawResult) {
         mScannerView.stopCamera();
         setContentView(R.layout.activity_selection);
+        OrdersModel item = null;
         for(int i = 0 ; i < values.size(); i++){
             if( values.get(i).getLotno().equalsIgnoreCase(rawResult.getText())){
-                setContentView(R.layout.activity_order_screen);
-                OrdersModel item = values.get(i);
+                //setContentView(R.layout.activity_order_screen);
+                Log.d("HANDLERES","i find one order");
+                item = values.get(i);
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                 ID = item.getLotno();
                 auxOrderModel = item;
                 new fwork().execute();
             }
         }
-        fillText();
-        createMfSeqList();
-        Toast.makeText(this, "Order not valid", Toast.LENGTH_LONG).show();
+        if( item == null){
+            Log.d("ORDERREAD", rawResult.getText());
+            Toast.makeText(this, "Order not valid",Toast.LENGTH_LONG).show();
+            fillText();
+            createMfSeqList();
+        }
+
     }
 
     @Override
@@ -252,6 +262,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 for( int i = 0; i < values.size(); i++){
                     if( values.get(i).getId().equalsIgnoreCase(mfseqid)){
                         values.remove(i);
+                        Log.d("OnReturn","Order to kill: "+mfseqid);
                         createMfSeqList();
                     }
                 }
@@ -262,16 +273,18 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     public void createMfSeqList(){
         MfseqOrderAdapter adapter = new MfseqOrderAdapter(this, values);
         listView = (ListView) findViewById(R.id.list);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
-                Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
-                ID = item.getLotno();
-                auxOrderModel = item;
-                new fwork().execute();
-            }
-        });
+        //if(listView != null){
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
+                    Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
+                    ID = item.getLotno();
+                    auxOrderModel = item;
+                    new fwork().execute();
+                }
+            });
+        //}
     }
 }

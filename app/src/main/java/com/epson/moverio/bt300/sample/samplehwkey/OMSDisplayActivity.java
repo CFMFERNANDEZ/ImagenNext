@@ -73,6 +73,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private String mfseqId;
     private View iconMet;
     private View iconMat;
+    private Boolean metricsShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,9 +116,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
     @Override
     public void OnResult(ArrayList<String> commands) {
+        ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m2);
         for(String command:commands)
         {
-            ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m1);
             if (command.toLowerCase().contains("open") || command.toLowerCase().contains("show") ){
                 if (command.toLowerCase().contains("metric")){
                     alertMetric.show();
@@ -162,14 +163,29 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     updateByFwork();
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    mImageIndex++;
-                    new nextOms().execute();
-                    updateByFwork( );
+                    if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
+                        List<Metric> auxList =  fworkActual.getMeasures();
+                        for(Metric m : auxList){
+                            if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
+                                metricsShown = false;
+                                alertMetric.show();
+                            }else{
+                                metricsShown = true;
+                            }
+                        }
+                    }
+                    else{  metricsShown = true;}
+                    if(metricsShown){
+                        mImageIndex++;
+                        new nextOms().execute();
+                        updateByFwork( );
+                        metricsShown = false;
+                    }
                     break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
-                    ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m2);
+                    ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m1);
                     break;
                 case KeyEvent.KEYCODE_DPAD_UP:
                     alertComponent.show();
@@ -324,7 +340,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             createComponentAlert();
 
             if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
-                alertMetric.show();
+               //alertMetric.show();
                 iconMet = (ImageView) findViewById(R.id.iconMet);
                 iconMet.setVisibility(View.VISIBLE);
             }
@@ -334,6 +350,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             }
 
             if(fworkActual.getComponent() != null && fworkActual.getComponent().size() > 0){
+                //alertMetric.show();
                 iconMat = (ImageView) findViewById(R.id.iconMat);
                 iconMat.setVisibility(View.VISIBLE);
             }
