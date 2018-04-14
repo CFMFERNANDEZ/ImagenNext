@@ -17,6 +17,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -247,6 +250,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                            ImageView voice = findViewById(R.id.animated_voice);
+                            Drawable animation = voice.getDrawable();
+                            if (animation instanceof AnimatedVectorDrawable) {
+                                Log.d("ANIMATION","ANIMATION");
+                                ((AnimatedVectorDrawable) animation).start();
+                            }
                             break;
                         default:
                             break;

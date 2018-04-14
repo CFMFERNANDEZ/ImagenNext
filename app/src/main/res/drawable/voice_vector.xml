@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="408dp"
+    android:height="408dp"
+    android:viewportWidth="408"
+    android:viewportHeight="408">
+    <group android:name="pencil"
+        android:pivotX="12"
+        android:pivotY="12">
+        <path
+            android:name="anim"
+            android:pathData="M 272 187 C 272 224.553 241.553 255 204 255 C 166.447 255 136 224.553 136 187 L 136 68 C 136 30.447 166.447 0 204 0 C 241.553 0 272 30.447 272 68 L 272 187 Z M 340 153 L 340 187 C 340 262.106 279.106 323 204 323 C 128.894 323 68 262.106 68 187 L 68 153 L 102 153 L 102 187 C 102 243.253 147.747 289 204 289 C 260.253 289 306 243.253 306 187 L 306 153 L 340 153 Z M 221 374 L 221 340 L 187 340 L 187 374 L 119 374 L 119 408 L 289 408 L 289 374 L 221 374 Z"
+            android:fillColor="#000"
+            android:strokeWidth="1"/>
+    </group>
+</vector>
