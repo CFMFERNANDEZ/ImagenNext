@@ -377,7 +377,6 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
             .build();
 
     public void QrScanner(){
-        Log.d("WSMD","onScanner");
         mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
         mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
         setContentView(mScannerView);

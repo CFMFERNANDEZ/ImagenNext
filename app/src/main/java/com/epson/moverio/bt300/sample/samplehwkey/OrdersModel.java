@@ -31,7 +31,7 @@ public class OrdersModel implements Serializable {
         this.qty = qty;
         this.asm_code = asm_code;
         this.asm_dscr = asm_dscr;
-        this.asm_code = event_code;
+        this.event_code = event_code;
         this.event_pos = event_pos;
     }
 

@@ -22,6 +22,7 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -116,6 +117,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     public void OnResult(ArrayList<String> commands) {
         for(String command:commands)
         {
+            ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m1);
             if (command.toLowerCase().contains("open") || command.toLowerCase().contains("show") ){
                 if (command.toLowerCase().contains("metric")){
                     alertMetric.show();
@@ -167,6 +169,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
+                    ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m2);
                     break;
                 case KeyEvent.KEYCODE_DPAD_UP:
                     alertComponent.show();
@@ -250,12 +253,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
-                            ImageView voice = findViewById(R.id.animated_voice);
-                            Drawable animation = voice.getDrawable();
-                            if (animation instanceof AnimatedVectorDrawable) {
-                                Log.d("ANIMATION","ANIMATION");
-                                ((AnimatedVectorDrawable) animation).start();
-                            }
                             break;
                         default:
                             break;
@@ -337,7 +334,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             }
 
             if(fworkActual.getComponent() != null && fworkActual.getComponent().size() > 0){
-                alertMetric.show();
                 iconMat = (ImageView) findViewById(R.id.iconMat);
                 iconMat.setVisibility(View.VISIBLE);
             }
@@ -367,6 +363,22 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         });
         builder.setCancelable(false);
         alertComponent = builder.create();
+        alertComponent.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     public void createMetricAlert(){
@@ -387,5 +399,23 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         });
         metricBuilder.setCancelable(false);
         alertMetric = metricBuilder.create();
+        alertMetric.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                            ImageView voice = findViewById(R.id.animated_voice);
+                            Drawable animation = voice.getDrawable();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
     }
 }
