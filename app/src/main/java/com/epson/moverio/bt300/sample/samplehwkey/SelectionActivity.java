@@ -141,7 +141,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                         orderIntent.putExtra("mfseq_id", ID);
                         startActivityForResult(orderIntent, 100);
                     }else{
-                        Toast.makeText(getApplicationContext(), "Personnel not valid", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Order not valid", Toast.LENGTH_LONG).show();
                     }
                 }
                 @Override
@@ -202,10 +202,11 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         for(int i = 0 ; i < values.size(); i++){
             if( values.get(i).getLotno().equalsIgnoreCase(rawResult.getText())){
                 setContentView(R.layout.activity_order_screen);
-                OrdersModel odertoSend = values.get(i);
-                Intent orderIntent = new Intent(this, OMSDisplayActivity.class);
-                orderIntent.putExtra("order", odertoSend);
-                startActivityForResult(orderIntent, 100);
+                OrdersModel item = values.get(i);
+                Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
+                ID = item.getLotno();
+                auxOrderModel = item;
+                new fwork().execute();
             }
         }
         fillText();
@@ -267,7 +268,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
-                ID = item.getId();
+                ID = item.getLotno();
                 auxOrderModel = item;
                 new fwork().execute();
             }
