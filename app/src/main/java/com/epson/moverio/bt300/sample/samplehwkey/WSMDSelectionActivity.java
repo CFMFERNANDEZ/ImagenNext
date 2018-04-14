@@ -326,10 +326,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                 public void onResponse(Call<List<OrdersModel>> call, Response<List<OrdersModel>> response) {
                     if(response.isSuccessful()&& response.body().size() > 0) {
                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-                        String wsmdId = ID;
-                        wsmdId = wsmdId.replace("[WSMD:", "");
-                        wsmdId = wsmdId.replace("]", "");
-                        Call<List<WSMDmodel>> wsmd = apiService.getWSMD(wsmdId);
+                        Call<List<WSMDmodel>> wsmd = apiService.getWSMD(ID);
                         wsmd.enqueue(new Callback<List<WSMDmodel>>() {
                             @Override
                             public void onResponse(Call<List<WSMDmodel>> call, Response<List<WSMDmodel>> response) {

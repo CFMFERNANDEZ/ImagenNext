@@ -16,7 +16,7 @@ public interface APIService {
     @Headers({
             "database: PLW-QAS-S"
     })
-    @GET("querytable/WSMD/{id}")
+    @GET("querytable/WSMD/bycode/{id}")
     Call<List<WSMDmodel>> getWSMD(@Path("id") String id);
     //Get user by code
     @Headers({

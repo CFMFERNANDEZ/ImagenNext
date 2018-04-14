@@ -200,7 +200,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         mScannerView.stopCamera();
         setContentView(R.layout.activity_selection);
         for(int i = 0 ; i < values.size(); i++){
-            if( values.get(i).getId().equalsIgnoreCase(rawResult.getText())){
+            if( values.get(i).getLotno().equalsIgnoreCase(rawResult.getText())){
                 setContentView(R.layout.activity_order_screen);
                 OrdersModel odertoSend = values.get(i);
                 Intent orderIntent = new Intent(this, OMSDisplayActivity.class);
