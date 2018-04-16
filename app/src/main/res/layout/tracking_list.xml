@@ -8,14 +8,14 @@
     android:padding="5dip" >
 
     <ImageView
-        android:id="@+id/component_list_image"
+        android:id="@+id/tracking_list_image"
         android:layout_width="70dip"
         android:layout_height="70dip"
         android:src="@drawable/component"/>
 
     <TextView
-        android:id="@+id/component_code"
-        android:layout_toRightOf="@+id/component_list_image"
+        android:id="@+id/tracking_comp_code"
+        android:layout_toRightOf="@+id/tracking_list_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"
@@ -25,23 +25,25 @@
         />
 
     <TextView
-        android:id="@+id/component_dscr"
-        android:layout_toRightOf="@+id/component_list_image"
+        android:id="@+id/tracking_comp_dscr"
+        android:layout_toRightOf="@+id/tracking_list_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/component_code"
+        android:layout_below="@id/tracking_comp_code"
         android:textColor="@color/smartAccent"
         android:layout_marginLeft="5dip"
         android:textSize="25sp"
         />
 
-    <TextView
-        android:id="@+id/component_quantity"
+    <EditText
+        android:id="@+id/tracking_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="35sp"
-        android:layout_alignParentRight="true"
-        android:textColor="@color/smartAccent"
+        android:layout_toRightOf="@+id/tracking_list_image"
+        android:layout_below="@id/tracking_comp_dscr"
+        android:textSize="25sp"
+        android:layout_marginLeft="5dip"
+        android:textColor="@color/colorAccent2"
         />
 
 </RelativeLayout>

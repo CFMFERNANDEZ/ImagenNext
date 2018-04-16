@@ -1,5 +1,10 @@
 <animated-vector
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/voice_vector">
-    <target android:name="pencil" android:animation="@animator/voice_animation"/>
+    <target
+        android:name="anim"
+        android:animation="@animator/voice_animation"/>
+    <target
+        android:name="anim"
+        android:animation="@animator/counter_clockwise_rotation"/>
     </animated-vector>

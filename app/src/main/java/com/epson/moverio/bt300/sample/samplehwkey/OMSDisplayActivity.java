@@ -12,19 +12,15 @@
 
 package com.epson.moverio.bt300.sample.samplehwkey;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
-import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -37,33 +33,35 @@ import android.widget.Toast;
 
 import com.google.zxing.Result;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
+import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener {
+public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener, ZXingScannerView.ResultHandler{
 
     private ImageView mImageView;
     private View mContentView;
     private ListView listViewComponent;
     private ListView listViewMetric;
+    private ListView listViewTracking;
     private int mImageIndex;
     private OrdersModel order;
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private AlertDialog alertComponent;
     private AlertDialog alertMetric;
     private AlertDialog tpcDialog;
+    private AlertDialog trackingAlert;
     private View componentView;
     private View metricView;
     private View tpcView;
+    private View trackingView;
     private ArrayList<Component> components;
     private ArrayList<Metric> metrics;
     private fworkModel fworkActual;
@@ -73,7 +71,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private String mfseqId;
     private View iconMet;
     private View iconMat;
+    private ZXingScannerView mScannerView;
     private Boolean metricsShown = false;
+    private Boolean showTracking = false;
+    private TrackingListAdapter trackingAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,10 +126,30 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 }else if(command.toLowerCase().contains("component")){
                     alertComponent.show();
                 }
+            }else if (command.toLowerCase().contains("close") || command.toLowerCase().contains("exit") ){
+                    if (command.toLowerCase().contains("metric")){
+                        alertMetric.dismiss();
+                        if(showTracking){
+                            if(!trackingAdapter.canContinue()){
+                                trackingAlert.show();
+                            }
+                        }
+                    }else if(command.toLowerCase().contains("component")){
+                        alertComponent.dismiss();
+                    }else if(command.toLowerCase().contains("tracking")){
+                        if(trackingAdapter.canContinue()){
+                            trackingAlert.dismiss();
+                            setImmersive();
+                            mImageIndex++;
+                            new nextOms().execute();
+                            updateByFwork( );
+                            metricsShown = false;
+                        }
+                    }
             }else if (command.toLowerCase().contains("next")){
-                mImageIndex++;
-                new nextOms().execute();
-                updateByFwork();
+               mImageIndex++;
+               new nextOms().execute();
+               updateByFwork();
             }else  if (command.toLowerCase().contains("back") || command.toLowerCase().contains("previuos")){
                 mImageIndex--;
                 updateByFwork();
@@ -163,19 +184,24 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     updateByFwork();
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    metricsShown = true;
                     if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
                         List<Metric> auxList =  fworkActual.getMeasures();
                         for(Metric m : auxList){
                             if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                 metricsShown = false;
                                 alertMetric.show();
-                            }else{
-                                metricsShown = true;
                             }
                         }
                     }
-                    else{  metricsShown = true;}
-                    if(metricsShown){
+                    if( showTracking && metricsShown){
+                        if(!trackingAdapter.canContinue()){
+                            trackingAlert.show();
+                        }else{
+                            showTracking = false;
+                        }
+                    }
+                    if(!showTracking && metricsShown){
                         mImageIndex++;
                         new nextOms().execute();
                         updateByFwork( );
@@ -270,6 +296,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
                             break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                            tpcDialog.dismiss();
+                            break;
                         default:
                             break;
                     }
@@ -338,6 +367,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             createMetricAlert();
             //Update Component
             createComponentAlert();
+            //Update lotTRracking
+            compTracking();
 
             if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
                //alertMetric.show();
@@ -389,6 +420,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
                             break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                            alertComponent.dismiss();
+                            break;
                         default:
                             break;
                     }
@@ -412,6 +446,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 setImmersive();
+                if(showTracking){
+                    trackingAlert.show();
+                }
             }
         });
         metricBuilder.setCancelable(false);
@@ -424,8 +461,14 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
-                            ImageView voice = findViewById(R.id.animated_voice);
-                            Drawable animation = voice.getDrawable();
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                            alertMetric.dismiss();
+                            if(showTracking){
+                                if(!trackingAdapter.canContinue()){
+                                    trackingAlert.show();
+                                }
+                            }
                             break;
                         default:
                             break;
@@ -434,5 +477,95 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 return false;
             }
         });
+    }
+
+    private void compTracking(){
+        List<Component> components =fworkActual.getComponent();
+        List<Component> compsTracking = new ArrayList<>();
+        if( components != null && components.size() > 0){
+            for(Component comp : components){
+                if( !comp.getComp_tracking().equals("")){
+                    compsTracking.add(comp);
+                    showTracking = true;
+                }
+            }
+            trackingAdapter = new TrackingListAdapter(this, compsTracking);
+            AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
+            LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
+
+            trackingView = metricInflater.inflate(R.layout.tracking_alert_layout, null);
+
+            listViewTracking = (ListView)trackingView.findViewById(R.id.tracking_list);
+            listViewTracking.setAdapter(trackingAdapter);
+
+            metricBuilder.setView(trackingView);
+            metricBuilder.setTitle("Lot. Tracking");
+            metricBuilder.setIcon(R.drawable.componentlist);
+            metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    setImmersive();
+                    if(trackingAdapter.canContinue()){
+                        mImageIndex++;
+                        new nextOms().execute();
+                        updateByFwork( );
+                        metricsShown = false;
+                    }
+                }
+            });
+            metricBuilder.setCancelable(false);
+            trackingAlert = metricBuilder.create();
+            trackingAlert.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                        switch (event.getKeyCode()) {
+                            case KeyEvent.KEYCODE_DPAD_DOWN:
+                                mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
+                                mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                                break;
+                            case KeyEvent.KEYCODE_DPAD_UP:
+                                QrScanner();
+                                break;
+                            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                                if(trackingAdapter.canContinue()){
+                                    trackingAlert.dismiss();
+                                    setImmersive();
+                                    mImageIndex++;
+                                    new nextOms().execute();
+                                    updateByFwork( );
+                                    metricsShown = false;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    return false;
+                }
+            });
+        }else{
+            showTracking = false;
+        }
+    }
+
+
+    public void QrScanner(){
+        mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
+        mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
+        setContentView(mScannerView);
+        trackingAlert.hide();
+        try {
+            mScannerView.startCamera(0);         // Start camera
+        }catch (Exception e){
+        }
+    }
+
+    public void handleResult(Result rawResult) {
+        trackingAlert.show();
+        setContentView(R.layout.activity_order_screen);
+        mScannerView.stopCamera();
+        trackingAdapter.setTracking(rawResult.getText());
+        trackingAdapter.notifyDataSetChanged();
     }
 }

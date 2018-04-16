@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -182,6 +183,9 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
         personnelEmail.setTypeface(TF);
         message.setTypeface(TF);
 
+        RelativeLayout.LayoutParams llp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        llp.setMargins(0, 380, 0, 0); // llp.setMargins(left, top, right, bottom);
+        personnelName.setLayoutParams(llp);
         personnelName.setText("Welcome, press the right button to scan your personnel id.");
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
 //        QrScanner();

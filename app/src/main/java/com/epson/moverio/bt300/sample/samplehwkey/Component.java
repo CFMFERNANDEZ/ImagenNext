@@ -11,11 +11,14 @@ public class Component implements Serializable {
     private String comp_code;
     private String comp_dscr;
     private int comp_qty;
+    private String comp_tracking;
+    private String trackingInput;
 
-    public Component(String code, String dscr, int quantity) {
+    public Component(String code, String dscr, int quantity, String comp_tracking) {
         this.comp_code = code;
         this.comp_dscr = dscr;
         this.comp_qty = quantity;
+        this.comp_tracking = comp_tracking;
     }
 
     public String getCode() {
@@ -28,5 +31,15 @@ public class Component implements Serializable {
 
     public int getQuantity() {
         return this.comp_qty;
+    }
+
+    public String getComp_tracking(){ return this.comp_tracking; }
+
+    public String gettrackingInput(){
+        return this.trackingInput;
+    }
+
+    public void settrackingInput( String input){
+        this.trackingInput = input;
     }
 }

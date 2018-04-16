@@ -54,6 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_below="@+id/personnel_image"
+            android:layout_marginTop="20dip"
             android:textSize="25sp"
             android:layout_centerHorizontal="true"
             android:textColor="#000000"/>
@@ -63,6 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_below="@+id/personnel_name"
+            android:layout_marginTop="20dip"
             android:textColor="#000000"
             android:layout_centerHorizontal="true"
             android:textSize="25sp"/>
@@ -71,6 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_below="@+id/personnel_code"
+            android:layout_marginTop="20dip"
             android:textColor="#000000"
             android:layout_centerHorizontal="true"
             android:textSize="25sp"/>
@@ -79,8 +82,8 @@
             android:id="@+id/wsmd_message"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:text=""
             android:layout_below="@+id/personnel_email"
+            android:layout_marginTop="20dip"
             android:textColor="#000000"
             android:layout_centerHorizontal="true"
             android:textSize="20sp" />

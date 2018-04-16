@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="408dp"
     android:height="408dp"
     android:viewportWidth="408"
     android:viewportHeight="408">
-    <group android:name="pencil"
+    <group
+        android:name="rotation"
         android:pivotX="12"
         android:pivotY="12">
         <path
