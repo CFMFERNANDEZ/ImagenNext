@@ -226,6 +226,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             }
                         }
                     }
+                    if( showTracking && metricsShown){
+                        if(!trackingAdapter.canContinue()){
+                            trackingAlert.show();
+                        }else{
+                            showTracking = false;
+                        }
+                    }
                     if(!showTracking && metricsShown){
                         mImageIndex++;
                         new nextOms().execute();
@@ -397,7 +404,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
             if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
                //alertMetric.show();
-
                 iconMet = (ImageView) findViewById(R.id.iconMet);
                 iconMet.setVisibility(View.VISIBLE);
             }
@@ -510,7 +516,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         List<Component> compsTracking = new ArrayList<>();
         if( components != null && components.size() > 0){
             for(Component comp : components){
-                if( comp.getComp_tracking()!= null && !comp.getComp_tracking().equals("")){
+                if( !comp.getComp_tracking().equals("")){
                     compsTracking.add(comp);
                     showTracking = true;
                 }
@@ -525,7 +531,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             listViewTracking.setAdapter(trackingAdapter);
 
             metricBuilder.setView(trackingView);
-            metricBuilder.setTitle("Lot. Tracking");
+            metricBuilder.setTitle("Serial/lot tracking");
             metricBuilder.setIcon(R.drawable.componentlist);
             metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
