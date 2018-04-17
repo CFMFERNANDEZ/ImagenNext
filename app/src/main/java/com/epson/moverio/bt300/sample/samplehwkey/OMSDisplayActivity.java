@@ -75,6 +75,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private Boolean metricsShown = false;
     private Boolean showTracking = false;
     private TrackingListAdapter trackingAdapter;
+    private MetricListAdapter metricAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,6 +192,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                 metricsShown = false;
                                 alertMetric.show();
+                                metricAdapter.updateMetrics();
                             }
                         }
                     }
@@ -433,7 +435,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     }
 
     public void createMetricAlert(){
-        MetricListAdapter metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
+        metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
         AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
         LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
         metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);
@@ -499,7 +501,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             listViewTracking.setAdapter(trackingAdapter);
 
             metricBuilder.setView(trackingView);
-            metricBuilder.setTitle("Lot. Tracking");
+            metricBuilder.setTitle("Serial/lot tracking");
             metricBuilder.setIcon(R.drawable.componentlist);
             metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
