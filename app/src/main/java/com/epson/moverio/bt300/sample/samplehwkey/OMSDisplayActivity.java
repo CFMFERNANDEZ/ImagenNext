@@ -507,6 +507,10 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                                 if(!trackingAdapter.canContinue()){
                                     trackingAlert.show();
                                 }
+                            }else{
+                                mImageIndex++;
+                                new nextOms().execute();
+                                updateByFwork( );
                             }
                             break;
                         default:
