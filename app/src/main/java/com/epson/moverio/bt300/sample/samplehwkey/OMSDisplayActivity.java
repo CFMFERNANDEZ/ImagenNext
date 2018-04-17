@@ -508,9 +508,29 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                                     trackingAlert.show();
                                 }
                             }else{
-                                mImageIndex++;
-                                new nextOms().execute();
-                                updateByFwork( );
+                                ////////////
+                                List<Metric> auxList =  fworkActual.getMeasures();
+                                for(Metric m : auxList){
+                                    if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
+                                        metricsShown = false;
+                                        alertMetric.show();
+                                        metricListAdapter.resetInput();
+                                    }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
+                                        if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
+                                            metricsShown = true;
+                                        }else{
+                                            metricsShown = false;
+                                            alertMetric.show();
+                                            metricListAdapter.resetInput();
+                                        }
+                                    }
+                                }
+                                ////////////
+                                if(metricsShown){
+                                    mImageIndex++;
+                                    new nextOms().execute();
+                                    updateByFwork( );
+                                }
                             }
                             break;
                         default:
