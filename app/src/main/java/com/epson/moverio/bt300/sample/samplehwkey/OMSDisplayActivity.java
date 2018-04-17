@@ -75,7 +75,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private Boolean metricsShown = false;
     private Boolean showTracking = false;
     private TrackingListAdapter trackingAdapter;
-    private MetricListAdapter metricAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,9 +147,34 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                         }
                     }
             }else if (command.toLowerCase().contains("next")){
-               mImageIndex++;
-               new nextOms().execute();
-               updateByFwork();
+                mImageIndex++;
+                new nextOms().execute();
+                updateByFwork();
+                ////Metrics
+                if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
+                    List<Metric> auxList =  fworkActual.getMeasures();
+                    for(Metric m : auxList){
+                        if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
+                            metricsShown = false;
+                            alertMetric.show();
+                        }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
+                            if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
+                                metricsShown = true;
+                            }else{
+                                metricsShown = false;
+                                alertMetric.show();
+                            }
+                        }
+                    }
+                }
+                else{  metricsShown = true;}
+                if(metricsShown){
+                    mImageIndex++;
+                    new nextOms().execute();
+                    updateByFwork( );
+                    metricsShown = false;
+                }
+                ////
             }else  if (command.toLowerCase().contains("back") || command.toLowerCase().contains("previuos")){
                 mImageIndex--;
                 updateByFwork();
@@ -192,7 +216,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                 metricsShown = false;
                                 alertMetric.show();
-                                metricAdapter.updateMetrics();
+                            }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
+                                if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
+                                    metricsShown = true;
+                                }else{
+                                    metricsShown = false;
+                                    alertMetric.show();
+                                }
                             }
                         }
                     }
@@ -435,7 +465,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     }
 
     public void createMetricAlert(){
-        metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
+        MetricListAdapter metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
         AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
         LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
         metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);

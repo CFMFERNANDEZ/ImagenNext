@@ -1,7 +1,6 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.content.Context;
-import android.os.Handler;
 import android.support.annotation.ArrayRes;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
@@ -31,9 +30,8 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
     private TextView metricCode;
     private TextView spectedMin;
     private TextView spectedQuantity;
-    private TextView inputQuantity;
+    private EditText inputQuantity;
     private ImageView componentImage;
-    private ViewGroup parentView;
 
    /* private float met = 0;
     private float metMin ;
@@ -53,7 +51,6 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
 
     @Override
     public View getView(final int i, View view, ViewGroup parent){
-        parentView = parent;
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View rowView = inflater.inflate(R.layout.metrics_list, parent, false);
@@ -65,38 +62,34 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
             metricCode.setText(metrics.get(i).getMeasure_dscr());
             spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
             spectedMin.setText(metrics.get(i).getMeasure_ltarget()+"");
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    inputQuantity.requestFocus();
-                }
-            }, 1000);
+            inputQuantity.requestFocus();
             inputQuantity.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                    boolean process = false;
-
                     if(actionId == EditorInfo.IME_ACTION_UNSPECIFIED){
                         Log.d("Accion", v.getText().toString()+"");
+                        Log.d("EVENT", ""+ event);
                         metrics.get(i).setMeasureInput(v.getText().toString());
                         Float met = Float.parseFloat(v.getText().toString());
                         Float metMin = Float.parseFloat(spectedMin.getText().toString());
                         Float metMax = Float.parseFloat(spectedQuantity.getText().toString());
-                        if(met >= metMin && met <= metMax){
+                        paintRows(met,metMin,metMax,rowView,i);
+                        /*if(met >= metMin && met <= metMax){
                             rowView.setBackgroundResource(R.color.metricColorGreen);
                             //rowView.setBackgroundColor(0xFF00FF00);
 
                         }else {
                             rowView.setBackgroundResource(R.color.metricColorRed);
                             //rowView.setBackgroundColor(0xFFFF0000);
-                        }
+                            inputQuantity.setText("");
+                            MetricListAdapter.super.notifyDataSetChanged();
+                            inputQuantity.requestFocus();
+                        }*/
                     }
                     else{
-
                     }
 
-                    return false;
+                    return true;
                 }
             });
         }
@@ -106,43 +99,37 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
             spectedQuantity.setText(metrics.get(i).getMeasure_htarget()+"");
             spectedMin.setText(metrics.get(i).getMeasure_ltarget()+"");
             inputQuantity.setText(metrics.get(i).getMeasureInput()+"");
-
             Float min = Float.parseFloat(metrics.get(i).getMeasure_ltarget());
             Float max = Float.parseFloat(metrics.get(i).getMeasure_htarget());
             Float auxMet = Float.parseFloat(metrics.get(i).getMeasureInput());
-            paintRows(auxMet,min,max,rowView);
+            paintRows(auxMet,min,max,rowView, i);
 
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    inputQuantity.requestFocus();
-                }
-            }, 1000);
             inputQuantity.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                    boolean process = false;
-
                     if(actionId == EditorInfo.IME_ACTION_UNSPECIFIED){
                         Log.d("Accion", v.getText().toString()+"");
+                        Log.d("EVENT", ""+ event);
                         Float met = Float.parseFloat(v.getText().toString());
                         Float metMin = Float.parseFloat(spectedMin.getText().toString());
                         Float metMax = Float.parseFloat(spectedQuantity.getText().toString());
-                        if(met >= metMin && met <= metMax){
+                        paintRows(met,metMin,metMax,rowView,i);
+                        /*if(met >= metMin && met <= metMax){
                             rowView.setBackgroundResource(R.color.metricColorGreen);
                             //rowView.setBackgroundColor(0xFF00FF00);
 
                         }else {
                             rowView.setBackgroundResource(R.color.metricColorRed);
                             //rowView.setBackgroundColor(0xFFFF0000);
-                        }
+                            inputQuantity.setText("");
+                            MetricListAdapter.super.notifyDataSetChanged();
+                            inputQuantity.requestFocus();
+                        }*/
                     }
                     else{
-
                     }
 
-                    return false;
+                    return true;
                 }
             });
 
@@ -154,43 +141,19 @@ public class MetricListAdapter extends ArrayAdapter<Metric> {
         return metrics;
     }
 
-    public void paintRows(Float met, Float min, Float max, View v){
+    public void paintRows(Float met, Float min, Float max, View v, int i){
 
         if(met >= min && met <= max){
             v.setBackgroundResource(R.color.metricColorGreen);
             //rowView.setBackgroundColor(0xFF00FF00);
-
         }else {
             v.setBackgroundResource(R.color.metricColorRed);
-            //rowView.setBackgroundColor(0xFFFF0000);2.52.2
-        }
-    }
-
-
-    public void updateMetrics(){
-        for( int i = 0; i < metrics.size(); i++) {
-            View rowView = getView(i, null, parentView);
-            if (metrics.get(i).getMeasureInput() != null && !metrics.get(i).getMeasureInput().equals("") ){
-                Float met = Float.parseFloat(metrics.get(i).getMeasureInput());
-                Float metMin = Float.parseFloat(spectedMin.getText().toString());
-                Float metMax = Float.parseFloat(spectedQuantity.getText().toString());
-                if(met >= metMin && met <= metMax){
-                    rowView.setBackgroundResource(R.color.metricColorGreen);
-                }else {
-                    rowView.setBackgroundResource(R.color.metricColorRed);
-                }
-            }else{
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        inputQuantity.requestFocus();
-                    }
-                }, 1000);
-                inputQuantity = (EditText)rowView.findViewById(R.id.metric_input);
-
-                break;
-            }
+            //rowView.setBackgroundColor(0xFFFF0000);
+            MetricListAdapter.super.notifyDataSetChanged();
+            inputQuantity.requestFocus();
+            metrics.get(i).setMeasureInput(null);
+            Toast.makeText(getContext(), "The measured value must be between the measurements " + min + "," + max, Toast.LENGTH_LONG).show();
+            //inputQuantity.setText("");
         }
     }
 }
