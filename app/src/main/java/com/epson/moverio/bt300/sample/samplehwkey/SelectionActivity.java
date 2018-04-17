@@ -185,6 +185,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
             mSpeechRecognizerManager = new SpeechRecognizerManager(this);
             mSpeechRecognizerManager.setOnResultListner(this);
         }
+        fillText();
+        createMfSeqList();
     }
 
     @Override

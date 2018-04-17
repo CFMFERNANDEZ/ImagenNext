@@ -75,6 +75,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private Boolean metricsShown = false;
     private Boolean showTracking = false;
     private TrackingListAdapter trackingAdapter;
+    private MetricListAdapter metricListAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,12 +218,14 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                 metricsShown = false;
                                 alertMetric.show();
+                               metricListAdapter.resetInput();
                             }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
                                 if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
                                     metricsShown = true;
                                 }else{
                                     metricsShown = false;
                                     alertMetric.show();
+                                    metricListAdapter.resetInput();
                                 }
                             }
                         }
@@ -244,9 +248,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
                     ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m1);
-                    break;
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    alertComponent.show();
                     break;
                 default:
                     break;
@@ -465,12 +466,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     }
 
     public void createMetricAlert(){
-        MetricListAdapter metricAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
+        metricListAdapter = new MetricListAdapter(this, fworkActual.getMeasures());
         AlertDialog.Builder metricBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
         LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
         metricView = metricInflater.inflate(R.layout.metrics_alert_layout, null);
         listViewMetric = (ListView)metricView.findViewById(R.id.metrics_list);
-        listViewMetric.setAdapter(metricAdapter);
+        listViewMetric.setAdapter(metricListAdapter);
         metricBuilder.setView(metricView);
         metricBuilder.setTitle("Metric list");
         metricBuilder.setIcon(R.drawable.metriclist);
@@ -489,7 +490,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
+
                     switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                            alertMetric.dismiss();
+                            createMetricAlert();
+                            alertMetric.show();
+                            break;
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
                             mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
@@ -516,7 +523,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         List<Component> compsTracking = new ArrayList<>();
         if( components != null && components.size() > 0){
             for(Component comp : components){
-                if( !comp.getComp_tracking().equals("")){
+                if( comp.getComp_tracking() != null && !comp.getComp_tracking().equals("") && !comp.getComp_tracking().equals("L") && !comp.getComp_tracking().equals("V") ){
                     compsTracking.add(comp);
                     showTracking = true;
                 }
@@ -531,7 +538,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             listViewTracking.setAdapter(trackingAdapter);
 
             metricBuilder.setView(trackingView);
-            metricBuilder.setTitle("Serial/lot tracking");
+            metricBuilder.setTitle("Tracking/lot material");
             metricBuilder.setIcon(R.drawable.componentlist);
             metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override

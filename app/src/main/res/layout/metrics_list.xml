@@ -45,12 +45,12 @@
 
     <EditText
         android:id="@+id/metric_input"
-        android:layout_width="111dp"
+        android:layout_toRightOf="@+id/metric_list_image"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginLeft="988dp"
-        android:layout_toRightOf="@+id/metric_spected"
+        android:layout_below="@id/metric_code"
+        android:layout_marginLeft="175dp"
         android:singleLine="true"
-        android:textSize="25sp" />
+         />
 
 </RelativeLayout>
