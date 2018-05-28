@@ -208,8 +208,6 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
         OrdersModel item = null;
         for(int i = 0 ; i < values.size(); i++){
             if( values.get(i).getLotno().equalsIgnoreCase(rawResult.getText())){
-                //setContentView(R.layout.activity_order_screen);
-                Log.d("HANDLERES","i find one order");
                 item = values.get(i);
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                 ID = item.getLotno();
@@ -262,7 +260,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
             if(resultCode == Activity.RESULT_OK){
                 String mfseqid = data.getStringExtra("mfseqid");
                 for( int i = 0; i < values.size(); i++){
-                    if( values.get(i).getId().equalsIgnoreCase(mfseqid)){
+                    if( values.get(i).getLotno().equalsIgnoreCase(mfseqid)){
                         values.remove(i);
                         Log.d("OnReturn","Order to kill: "+mfseqid);
                         createMfSeqList();
@@ -287,6 +285,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                     new fwork().execute();
                 }
             });
+        adapter.notifyDataSetChanged();
         //}
     }
 }

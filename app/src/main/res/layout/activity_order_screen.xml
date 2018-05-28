@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:background="@drawable/background"
     tools:context="com.epson.moverio.bt300.sample.samplehwkey.OMSDisplayActivity">
@@ -13,6 +12,13 @@
         android:layout_height="match_parent"
         android:layout_weight="0.1"
         android:paddingTop="60pt">
+
+        <TextView
+            android:id="@+id/steps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="35sp"
+            android:layout_marginTop="35dp"/>
 
     </RelativeLayout>
 

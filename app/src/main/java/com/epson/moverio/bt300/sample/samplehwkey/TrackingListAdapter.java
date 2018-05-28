@@ -46,12 +46,12 @@ public class TrackingListAdapter extends ArrayAdapter<Component> {
         parentView = parent;
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View rowView = inflater.inflate(R.layout.tracking_list, parent, false);
-        componentCode = rowView.findViewById(R.id.tracking_comp_code);
+        componentCode = (TextView)rowView.findViewById(R.id.tracking_comp_code);
         componentCode.setText(components.get(i).getCode());
-        componenteDscr = rowView.findViewById(R.id.tracking_comp_dscr);
+        componenteDscr = (TextView)rowView.findViewById(R.id.tracking_comp_dscr);
         componenteDscr.setText(components.get(i).getDscr());
         if( components.get(i).gettrackingInput() != null &&  !components.get(i).gettrackingInput().equals("") ){
-            trackInput = rowView.findViewById(R.id.tracking_input);
+            trackInput = (EditText)rowView.findViewById(R.id.tracking_input);
             trackInput.setText( components.get(i).gettrackingInput() );
         }
         return rowView;
@@ -70,7 +70,7 @@ public class TrackingListAdapter extends ArrayAdapter<Component> {
         Toast.makeText( context, tracking, Toast.LENGTH_LONG).show();
         for( int i = 0; i < components.size(); i++) {
             View rowView = getView(i, null, parentView);
-            trackInput = rowView.findViewById(R.id.tracking_input);
+            trackInput = (EditText) rowView.findViewById(R.id.tracking_input);
             if(components.get(i).gettrackingInput() == null || components.get(i).gettrackingInput().equals("")){
                 trackInput.setText(tracking);
                 components.get(i).settrackingInput(tracking);

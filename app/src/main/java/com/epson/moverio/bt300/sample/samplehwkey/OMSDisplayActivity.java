@@ -16,6 +16,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -47,6 +49,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener, ZXingScannerView.ResultHandler{
 
     private ImageView mImageView;
+    private TextView steps;
     private View mContentView;
     private ListView listViewComponent;
     private ListView listViewMetric;
@@ -74,9 +77,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private ZXingScannerView mScannerView;
     private Boolean metricsShown = false;
     private Boolean showTracking = false;
+
+    private Boolean isTrackinkVisible = false;
     private TrackingListAdapter trackingAdapter;
     private MetricListAdapter metricListAdapter;
 
+    private static String font_path = "font/EUEXCF.TTF";
+    private static Typeface TF;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,19 +99,22 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         mImageView = (ImageView) findViewById(R.id.oms_image);
         fworks = (fworkModelList) getIntent().getSerializableExtra("fworkList");
         int i = 0;
+        mImageIndex = 0;
         for(fworkModel o : fworks.getList()){
             if(o.getFirst_event()!=null){
-                if(o.getFirst_event().equals("true")){
-                    fworkActual = o;
+                if( o.getFirst_event().equals("true")){
+//                    fworkActual = o;
+                    mImageIndex = i;
                 }
             }
-            Log.d("FWORK BEGIN", o.getC_Id());
+            i++;
         }
         mapImages = new HashMap<>();
-        if(fworkActual == null){
-            fworkActual = fworks.getList().get(0);
-            fworkActual.setC_first_event("true");
-        }
+//        if(fworkActual == null){
+//            mImageIndex = 0;
+////            fworkActual = fworks.getList().get(0);
+////            fworkActual.setC_first_event("true");
+//        }
         updateByFwork();
     }
 
@@ -127,12 +137,15 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     alertMetric.show();
                 }else if(command.toLowerCase().contains("component")){
                     alertComponent.show();
+                }else if( command.toLowerCase().contains("scan")){
+                    QrScanner();
                 }
             }else if (command.toLowerCase().contains("close") || command.toLowerCase().contains("exit") ){
                     if (command.toLowerCase().contains("metric")){
                         alertMetric.dismiss();
                         if(showTracking){
                             if(!trackingAdapter.canContinue()){
+                                isTrackinkVisible = true;
                                 trackingAlert.show();
                             }
                         }
@@ -141,6 +154,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     }else if(command.toLowerCase().contains("tracking")){
                         if(trackingAdapter.canContinue()){
                             trackingAlert.dismiss();
+                            isTrackinkVisible = false;
                             setImmersive();
                             mImageIndex++;
                             new nextOms().execute();
@@ -149,37 +163,47 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                         }
                     }
             }else if (command.toLowerCase().contains("next")){
-                mImageIndex++;
-                new nextOms().execute();
-                updateByFwork();
-                ////Metrics
-                if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
-                    List<Metric> auxList =  fworkActual.getMeasures();
-                    for(Metric m : auxList){
-                        if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
-                            metricsShown = false;
-                            alertMetric.show();
-                        }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
-                            if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
-                                metricsShown = true;
-                            }else{
+                if( !isTrackinkVisible){
+                    metricsShown = true;
+                    if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
+                        List<Metric> auxList =  fworkActual.getMeasures();
+                        for(Metric m : auxList){
+                            if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                 metricsShown = false;
                                 alertMetric.show();
+                                metricListAdapter.resetInput();
+                            }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
+                                if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
+                                    metricsShown = true;
+                                }else{
+                                    metricsShown = false;
+                                    alertMetric.show();
+                                    metricListAdapter.resetInput();
+                                }
                             }
                         }
                     }
-                }
-                else{  metricsShown = true;}
-                if(metricsShown){
-                    mImageIndex++;
-                    new nextOms().execute();
-                    updateByFwork( );
-                    metricsShown = false;
+                    if( showTracking && metricsShown){
+                        if(!trackingAdapter.canContinue()){
+                            isTrackinkVisible = true;
+                            trackingAlert.show();
+                        }else{
+                            showTracking = false;
+                        }
+                    }
+                    if(!showTracking && metricsShown){
+                        mImageIndex++;
+                        new nextOms().execute();
+                        updateByFwork( );
+                        metricsShown = false;
+                    }
                 }
                 ////
             }else  if (command.toLowerCase().contains("back") || command.toLowerCase().contains("previuos")){
-                mImageIndex--;
-                updateByFwork();
+                if( !isTrackinkVisible){
+                    mImageIndex--;
+                    updateByFwork();
+                }
             }else  if (command.toLowerCase().contains("confirm") || command.toLowerCase().contains("PC") ||
                     command.toLowerCase().contains("end") || command.toLowerCase().contains("pipc")){
                 tpcDialog.dismiss();
@@ -194,7 +218,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     @Override
     protected void onResume() {
         super.onResume();
-        mImageIndex = 0;
     }
 
     @Override
@@ -232,6 +255,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     }
                     if( showTracking && metricsShown){
                         if(!trackingAdapter.canContinue()){
+                            isTrackinkVisible = true;
                             trackingAlert.show();
                         }else{
                             showTracking = false;
@@ -277,7 +301,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 public void onResponse(Call<List<String>> call, Response<List<String>> response) {
                     if(response.isSuccessful() && response.body().size() > 0) {
                         Log.d("SUCCESS",response+"");
-                         if(mImageIndex != fworks.getList().size()) {
+                         if(mImageIndex < fworks.getList().size()) {
                              fworkActual.setC_first_event("true");
                         }else{
                             TPCDialog();
@@ -387,8 +411,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     public void updateByFwork(){
         //Update image
         if(mImageIndex < fworks.getList().size()){
+            TF = Typeface.createFromAsset(getAssets(),font_path);
+            steps = (TextView)findViewById(R.id.steps);
+            steps.setTypeface(TF);
+            steps.setText((mImageIndex+1)+"/"+fworks.getList().size());
+
             fworkActual = fworks.getList().get(mImageIndex);
-            Log.d("FWORK_IMAGE", fworkActual.getC_Id()+"__"+fworkActual.getOms_path());
             Image image = mapImages.get(fworkActual.getC_Id());
             if( image == null ){
                 new omsPicture().execute();
@@ -480,6 +508,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             public void onClick(DialogInterface dialog, int which) {
                 setImmersive();
                 if(showTracking){
+                    isTrackinkVisible=true;
                     trackingAlert.show();
                 }
             }
@@ -505,6 +534,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             alertMetric.dismiss();
                             if(showTracking){
                                 if(!trackingAdapter.canContinue()){
+                                    isTrackinkVisible = true;
                                     trackingAlert.show();
                                 }
                             }else{
@@ -513,6 +543,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                                 for(Metric m : auxList){
                                     if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                         metricsShown = false;
+                                        Toast.makeText( getApplicationContext(), "The measured value must be between the measurements " + m.getMeasure_ltarget() + " and " + m.getMeasure_htarget(), Toast.LENGTH_LONG).show();
                                         alertMetric.show();
                                         metricListAdapter.resetInput();
                                     }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
@@ -521,6 +552,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                                         }else{
                                             metricsShown = false;
                                             alertMetric.show();
+                                            Toast.makeText( getApplicationContext(), "The measured value must be between the measurements " + m.getMeasure_ltarget() + " and " + m.getMeasure_htarget(), Toast.LENGTH_LONG).show();
                                             metricListAdapter.resetInput();
                                         }
                                     }
@@ -562,7 +594,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             listViewTracking.setAdapter(trackingAdapter);
 
             metricBuilder.setView(trackingView);
-            metricBuilder.setTitle("Tracking/lot material");
+            metricBuilder.setTitle("Scan serial/ lot number");
             metricBuilder.setIcon(R.drawable.componentlist);
             metricBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
@@ -593,6 +625,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             case KeyEvent.KEYCODE_DPAD_RIGHT:
                                 if(trackingAdapter.canContinue()){
                                     trackingAlert.dismiss();
+                                    isTrackinkVisible = false;
                                     setImmersive();
                                     mImageIndex++;
                                     new nextOms().execute();
@@ -626,6 +659,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
     public void handleResult(Result rawResult) {
         trackingAlert.show();
+        isTrackinkVisible = true;
         setContentView(R.layout.activity_order_screen);
         mScannerView.stopCamera();
         trackingAdapter.setTracking(rawResult.getText());
