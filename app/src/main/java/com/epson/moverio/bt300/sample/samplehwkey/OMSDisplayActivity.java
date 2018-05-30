@@ -72,6 +72,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private AlertDialog tpcDialog;
     private AlertDialog trackingAlert;
     private AlertDialog reportTQC;
+    private AlertDialog alertVideo;
     private View componentView;
     private View metricView;
     private View tpcView;
@@ -229,6 +230,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             }
             else if(command.toLowerCase().contains("report") || command.toLowerCase().contains("tqc")){
                 reportTQC.show();
+            }
+            else if(command.toLowerCase().contains("video")){
+                alertVideo.show();
             }
         }
     }
