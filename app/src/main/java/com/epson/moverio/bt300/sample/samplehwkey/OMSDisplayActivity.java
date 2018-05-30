@@ -16,11 +16,20 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
@@ -35,6 +44,7 @@ import android.widget.Toast;
 
 import com.google.zxing.Result;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +71,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private AlertDialog alertMetric;
     private AlertDialog tpcDialog;
     private AlertDialog trackingAlert;
+    private AlertDialog reportTQC;
     private View componentView;
     private View metricView;
     private View tpcView;
@@ -85,10 +96,14 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private static String font_path = "font/EUEXCF.TTF";
     private static Typeface TF;
 
+    private ImageView img;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_screen);
+        img=(ImageView)this.findViewById(R.id.imageReport);
 
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
@@ -211,6 +226,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 intent.putExtra("mfseqid", mfseqId);
                 setResult(RESULT_OK, intent);
                 super.finish();
+            }
+            else if(command.toLowerCase().contains("report") || command.toLowerCase().contains("tqc")){
+                reportTQC.show();
             }
         }
     }
@@ -428,6 +446,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             createMetricAlert();
             //Update Component
             createComponentAlert();
+            createReportAlert();
             //Update lotTRracking
             compTracking();
 
@@ -574,6 +593,66 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         });
     }
 
+    public void createReportAlert(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+
+        componentView = inflater.inflate(R.layout.report_tqc, null);
+        builder.setView(componentView);
+        builder.setTitle("Report TQC");
+        builder.setIcon(R.drawable.componentlist);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        builder.setCancelable(false);
+        reportTQC = builder.create();
+        reportTQC.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                            Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+
+                            File imagesFolder = new File(Environment.getExternalStorageDirectory(),"Test");
+                            imagesFolder.mkdirs();
+
+                            File image = new File(imagesFolder, "foto.jpg");
+                            Uri uriSavedImage = Uri.fromFile(image);
+
+                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
+                            startActivityForResult(cameraIntent, 1);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("LLEGA","si llega");
+        //Comprovamos que la foto se a realizado
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            //Creamos un bitmap con la imagen recientemente almacenada en la memoria
+            Bitmap bMap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()+"/AndroidFacil/"+"foto.jpg");
+            //Añadimos el bitmap al imageView para mostrarlo por pantalla
+            Log.d("Guardada","Foto");
+            img.setImageBitmap(bMap);
+        }
+    }
+
     private void compTracking(){
         List<Component> components =fworkActual.getComponent();
         List<Component> compsTracking = new ArrayList<>();
@@ -658,6 +737,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     }
 
     public void handleResult(Result rawResult) {
+        Log.d("OnResult","Result");
         trackingAlert.show();
         isTrackinkVisible = true;
         setContentView(R.layout.activity_order_screen);
