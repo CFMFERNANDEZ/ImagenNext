@@ -125,7 +125,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
      * */
      private ZXingScannerView mScannerView;
      private static final int ALL_PERMISSION = 1;
-    String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET};
+    String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET, Manifest.permission.WRITE_EXTERNAL_STORAGE};
      private boolean personnelLoaded = false;
      private boolean wsLoaded = false;
     //ArrayList<Personnel> personnels = new ArrayList();    //Works offline

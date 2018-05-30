@@ -36,9 +36,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,22 +65,26 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private View mContentView;
     private ListView listViewComponent;
     private ListView listViewMetric;
+    private ListView listViewCheckMetric;
     private ListView listViewTracking;
     private int mImageIndex;
     private OrdersModel order;
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private AlertDialog alertComponent;
     private AlertDialog alertMetric;
+    private AlertDialog alertCheckMetric;
     private AlertDialog tpcDialog;
     private AlertDialog trackingAlert;
     private AlertDialog reportTQC;
-    private AlertDialog alertVideo;
     private View componentView;
     private View metricView;
+    private View checkMetricView;
     private View tpcView;
     private View trackingView;
     private ArrayList<Component> components;
     private ArrayList<Metric> metrics;
+    private List<Metric> checkMetrics;
+    private int checkCounter = 0;
     private fworkModel fworkActual;
     private fworkModelList fworks;
     private APIService apiService;
@@ -88,11 +94,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private View iconMat;
     private ZXingScannerView mScannerView;
     private Boolean metricsShown = false;
+    private Boolean checkMetricsShown = false;
     private Boolean showTracking = false;
 
     private Boolean isTrackinkVisible = false;
     private TrackingListAdapter trackingAdapter;
     private MetricListAdapter metricListAdapter;
+    private CheckListAdapter checkListAdapter;
 
     private static String font_path = "font/EUEXCF.TTF";
     private static Typeface TF;
@@ -157,30 +165,31 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     QrScanner();
                 }
             }else if (command.toLowerCase().contains("close") || command.toLowerCase().contains("exit") ){
-                    if (command.toLowerCase().contains("metric")){
-                        alertMetric.dismiss();
-                        if(showTracking){
-                            if(!trackingAdapter.canContinue()){
-                                isTrackinkVisible = true;
-                                trackingAlert.show();
-                            }
-                        }
-                    }else if(command.toLowerCase().contains("component")){
-                        alertComponent.dismiss();
-                    }else if(command.toLowerCase().contains("tracking")){
-                        if(trackingAdapter.canContinue()){
-                            trackingAlert.dismiss();
-                            isTrackinkVisible = false;
-                            setImmersive();
-                            mImageIndex++;
-                            new nextOms().execute();
-                            updateByFwork( );
-                            metricsShown = false;
+                if (command.toLowerCase().contains("metric")){
+                    alertMetric.dismiss();
+                    if(showTracking){
+                        if(!trackingAdapter.canContinue()){
+                            isTrackinkVisible = true;
+                            trackingAlert.show();
                         }
                     }
+                }else if(command.toLowerCase().contains("component")){
+                    alertComponent.dismiss();
+                }else if(command.toLowerCase().contains("tracking")){
+                    if(trackingAdapter.canContinue()){
+                        trackingAlert.dismiss();
+                        isTrackinkVisible = false;
+                        setImmersive();
+                        mImageIndex++;
+                        new nextOms().execute();
+                        updateByFwork( );
+                        metricsShown = false;
+                    }
+                }
             }else if (command.toLowerCase().contains("next")){
                 if( !isTrackinkVisible){
                     metricsShown = true;
+                    checkMetricsShown = true;
                     if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
                         List<Metric> auxList =  fworkActual.getMeasures();
                         for(Metric m : auxList){
@@ -199,7 +208,17 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             }
                         }
                     }
-                    if( showTracking && metricsShown){
+                    //
+                    if(fworkActual.getCheckMeasures()!= null && fworkActual.getCheckMeasures().size() > 0){
+                        List<Metric> checkList =  checkListAdapter.getListMetrics();
+                        for(Metric m : checkList){
+                            if( !m.getCheck()){
+                                alertCheckMetric.show();
+                                checkMetricsShown = false;
+                            }
+                        }
+                    }
+                    if( showTracking && metricsShown && checkMetricsShown ){
                         if(!trackingAdapter.canContinue()){
                             isTrackinkVisible = true;
                             trackingAlert.show();
@@ -207,11 +226,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             showTracking = false;
                         }
                     }
-                    if(!showTracking && metricsShown){
+                    if(!showTracking && (metricsShown && checkMetricsShown)){
                         mImageIndex++;
                         new nextOms().execute();
                         updateByFwork( );
                         metricsShown = false;
+                        checkMetricsShown = false;
                     }
                 }
                 ////
@@ -227,12 +247,32 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 intent.putExtra("mfseqid", mfseqId);
                 setResult(RESULT_OK, intent);
                 super.finish();
+            }else if( command.toLowerCase().contains("checked") || command.toLowerCase().contains("check") || command.toLowerCase().contains("cheque")  ){
+                if( command.toLowerCase().contains("all") ){
+                    if( checkMetrics != null && checkMetrics.size() > 0){
+                        int i = 0;
+                        for(Metric metric : checkMetrics ){
+                            if(!checkMetrics.get(i).getCheck()){
+                                checkListAdapter.setChecked(true, i);
+                            }
+                            i++;
+                        }
+                    }
+                }else{
+                    if( checkMetrics != null && checkMetrics.size() > 0){
+                        if(!checkMetrics.get(checkCounter).getCheck()){
+                            checkListAdapter.setChecked(true, checkCounter);
+                            checkCounter++;
+                        }else{
+                            checkCounter++;
+                        }
+                    }
+                }
+                checkListAdapter.notifyDataSetChanged();
+                break;
             }
             else if(command.toLowerCase().contains("report") || command.toLowerCase().contains("tqc")){
                 reportTQC.show();
-            }
-            else if(command.toLowerCase().contains("video")){
-                alertVideo.show();
             }
         }
     }
@@ -257,13 +297,14 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     metricsShown = true;
+                    checkMetricsShown = true;
                     if(fworkActual.getMeasures()!= null && fworkActual.getMeasures().size() > 0){
                         List<Metric> auxList =  fworkActual.getMeasures();
                         for(Metric m : auxList){
                             if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
                                 metricsShown = false;
                                 alertMetric.show();
-                               metricListAdapter.resetInput();
+                                metricListAdapter.resetInput();
                             }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
                                 if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
                                     metricsShown = true;
@@ -275,7 +316,17 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             }
                         }
                     }
-                    if( showTracking && metricsShown){
+                    //
+                    if(fworkActual.getCheckMeasures()!= null && fworkActual.getCheckMeasures().size() > 0){
+                        List<Metric> checkList =  checkListAdapter.getListMetrics();
+                        for(Metric m : checkList){
+                            if( !m.getCheck()){
+                                alertCheckMetric.show();
+                                checkMetricsShown = false;
+                            }
+                        }
+                    }
+                    if( showTracking && metricsShown && checkMetricsShown ){
                         if(!trackingAdapter.canContinue()){
                             isTrackinkVisible = true;
                             trackingAlert.show();
@@ -283,11 +334,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             showTracking = false;
                         }
                     }
-                    if(!showTracking && metricsShown){
+                    if(!showTracking && (metricsShown && checkMetricsShown)){
                         mImageIndex++;
                         new nextOms().execute();
                         updateByFwork( );
                         metricsShown = false;
+                        checkMetricsShown = false;
                     }
                     break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
@@ -323,8 +375,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 public void onResponse(Call<List<String>> call, Response<List<String>> response) {
                     if(response.isSuccessful() && response.body().size() > 0) {
                         Log.d("SUCCESS",response+"");
-                         if(mImageIndex < fworks.getList().size()) {
-                             fworkActual.setC_first_event("true");
+                        if(mImageIndex < fworks.getList().size()) {
+                            fworkActual.setC_first_event("true");
                         }else{
                             TPCDialog();
                         }
@@ -448,6 +500,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             }
             //Update metrics
             createMetricAlert();
+            //Update checklist
+            createCheckListAlert();
+            checkCounter = 0;
             //Update Component
             createComponentAlert();
             createReportAlert();
@@ -455,7 +510,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             compTracking();
 
             if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
-               //alertMetric.show();
+                //alertMetric.show();
                 iconMet = (ImageView) findViewById(R.id.iconMet);
                 iconMet.setVisibility(View.VISIBLE);
             }
@@ -530,7 +585,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 setImmersive();
-                if(showTracking){
+                if(fworkActual.getCheckMeasures() != null && fworkActual.getCheckMeasures().size() > 0){
+                    alertCheckMetric.show();
+                }else if(showTracking){
                     isTrackinkVisible=true;
                     trackingAlert.show();
                 }
@@ -726,6 +783,87 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         }else{
             showTracking = false;
         }
+    }
+
+    public void createCheckListAlert(){
+        checkMetrics =  fworkActual.getCheckMeasures();
+        checkListAdapter = new CheckListAdapter(this,checkMetrics);
+        AlertDialog.Builder checkListBuilder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater metricInflater = LayoutInflater.from(getApplicationContext());
+        checkMetricView = metricInflater.inflate(R.layout.checkmetrics_alert_layout, null);
+        listViewCheckMetric = (ListView)checkMetricView.findViewById(R.id.checkmetrics_list);
+        listViewCheckMetric.setAdapter(checkListAdapter);
+        checkListBuilder.setView(checkMetricView);
+        checkListBuilder.setTitle("Metric list");
+        checkListBuilder.setIcon(R.drawable.metriclist);
+        checkListBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+                if(showTracking){
+                    isTrackinkVisible=true;
+                    trackingAlert.show();
+                }
+            }
+        });
+        checkListBuilder.setCancelable(false);
+        alertCheckMetric = checkListBuilder.create();
+        alertCheckMetric.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                            alertCheckMetric.dismiss();
+                            createMetricAlert();
+                            alertCheckMetric.show();
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(OMSDisplayActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(OMSDisplayActivity.this);
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                            alertCheckMetric.dismiss();
+                            if(showTracking){
+                                if(!trackingAdapter.canContinue()){
+                                    isTrackinkVisible = true;
+                                    trackingAlert.show();
+                                }
+                            }else{
+                                ////////////
+                                List<Metric> auxList =  fworkActual.getMeasures();
+                                for(Metric m : auxList){
+                                    if (m.getMeasureInput() == null || m.getMeasureInput() ==""){
+                                        metricsShown = false;
+                                        Toast.makeText( getApplicationContext(), "The measured value must be between the measurements " + m.getMeasure_ltarget() + " and " + m.getMeasure_htarget(), Toast.LENGTH_LONG).show();
+                                        alertMetric.show();
+                                        metricListAdapter.resetInput();
+                                    }else if(m.getMeasureInput() != null || m.getMeasureInput() !=""){
+                                        if(Float.parseFloat(m.getMeasureInput().toString()) >= Float.parseFloat(m.getMeasure_ltarget()) && Float.parseFloat(m.getMeasureInput())<= Float.parseFloat(m.getMeasure_htarget())){
+                                            metricsShown = true;
+                                        }else{
+                                            metricsShown = false;
+                                            alertMetric.show();
+                                            Toast.makeText( getApplicationContext(), "The measured value must be between the measurements " + m.getMeasure_ltarget() + " and " + m.getMeasure_htarget(), Toast.LENGTH_LONG).show();
+                                            metricListAdapter.resetInput();
+                                        }
+                                    }
+                                }
+                                ////////////
+                                if(metricsShown){
+                                    mImageIndex++;
+                                    new nextOms().execute();
+                                    updateByFwork( );
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
 
