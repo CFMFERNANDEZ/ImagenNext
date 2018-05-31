@@ -14,4 +14,6 @@
 
     <string name="title_activity_fullscreen">FullscreenActivity</string>
 
+    <string name="file_provider_authority" translatable="false"> com.epson.moverio.bt300.sample.fileprovider</string>
+
 </resources>

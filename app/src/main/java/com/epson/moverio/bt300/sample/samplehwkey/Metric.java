@@ -13,6 +13,7 @@ public class Metric implements Serializable {
     private String measure_htarget;
     private String measure_ltarget;
     private String measureInput;
+    private boolean check;
 
     public Metric(String code, String dscr, String htarget, String ltarget, String measure){
         this.measure_dscr = dscr;
@@ -20,6 +21,11 @@ public class Metric implements Serializable {
         this.measure_htarget = htarget;
         this.measure_ltarget = ltarget;
         this.measureInput = measure;
+    }
+
+    public Metric(String code, String dscr, String htarget, String ltarget, String measure, boolean state){
+        this(code, dscr, htarget,ltarget, measure);
+        this.check = state;
     }
 
     public String getMeasure_dscr() {
@@ -41,4 +47,8 @@ public class Metric implements Serializable {
     public String getMeasureInput() { return measureInput; }
 
     public void setMeasureInput(String measureInput) { this.measureInput = measureInput; }
+
+    public void setCheck (boolean state){ this.check = state; }
+
+    public boolean getCheck ( ){ return this.check; }
 }

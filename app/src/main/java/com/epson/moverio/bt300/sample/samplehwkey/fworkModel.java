@@ -15,9 +15,10 @@ public class fworkModel implements Serializable {
     private String first_event;
     private String oms_path;
     private List<Component> components;
-    private List<Metric> measures;
+    private List<Metric> numeric_measures;
+    private List<Metric> check_measures;
 
-    public fworkModel(String id, String c_code, String c_dscr, String first_event, String oms_path ,List<Component> comps, List<Metric> measures) {
+    public fworkModel(String id, String c_code, String c_dscr, String first_event, String oms_path ,List<Component> comps, List<Metric> numeric_measures, List<Metric> check_measures) {
         this.c_id = id;
         this.c_code = c_code;
         this.c_dscr = c_dscr;
@@ -25,7 +26,8 @@ public class fworkModel implements Serializable {
         this.first_event = first_event;
         this.oms_path = oms_path;
         this.components = comps;
-        this.measures = measures;
+        this.numeric_measures = numeric_measures;
+        this.check_measures = check_measures;
     }
 
     public String getC_Id() { return c_id; }
@@ -52,6 +54,10 @@ public class fworkModel implements Serializable {
     }
 
     public List<Metric> getMeasures() {
-        return measures;
+        return numeric_measures;
+    }
+
+    public List<Metric> getCheckMeasures() {
+        return check_measures;
     }
 }
