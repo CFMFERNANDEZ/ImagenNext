@@ -39,8 +39,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.google.zxing.Result;
 
@@ -64,6 +66,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private ListView listViewComponent;
     private ListView listViewMetric;
     private ListView listViewTracking;
+    private VideoView videoms;
     private int mImageIndex;
     private OrdersModel order;
     private SpeechRecognizerManager mSpeechRecognizerManager;
@@ -451,6 +454,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             //Update Component
             createComponentAlert();
             createReportAlert();
+            createVideoAlert();
             //Update lotTRracking
             compTracking();
 
@@ -643,6 +647,51 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 return false;
             }
         });
+    }
+
+    public void createVideoAlert(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(OMSDisplayActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+
+        componentView = inflater.inflate(R.layout.video_layout, null);
+        videoms = componentView.findViewById(R.id.videoOMS);
+
+        videoms.setMediaController(new MediaController(this));
+        videoms.setVideoURI(Uri.parse("http://techslides.com/demos/sample-videos/small.mp4"));
+        videoms.requestFocus();
+
+        builder.setView(componentView);
+        builder.setTitle("OMS video");
+        builder.setIcon(R.drawable.componentlist);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setImmersive();
+            }
+        });
+        builder.setCancelable(false);
+        alertVideo = builder.create();
+        alertVideo.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                            videoms.start();
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_UP:
+
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
