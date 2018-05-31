@@ -29,6 +29,9 @@
             android:theme="@style/FullscreenSmart" />
         <activity android:name=".PreferenceActivityCustom"
             android:theme="@style/PreferenceSmart"></activity>
+        <activity
+            android:name=".ReportActivity"
+            android:theme="@style/FullscreenSmart" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="@string/file_provider_authority"

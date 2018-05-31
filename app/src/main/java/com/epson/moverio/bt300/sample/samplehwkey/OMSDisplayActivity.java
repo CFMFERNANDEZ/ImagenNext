@@ -73,6 +73,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private AlertDialog tpcDialog;
     private AlertDialog trackingAlert;
     private AlertDialog reportTQC;
+    private AlertDialog alertVideo;
     private View componentView;
     private View metricView;
     private View checkMetricView;
@@ -268,7 +269,14 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 break;
             }
             else if(command.toLowerCase().contains("report") || command.toLowerCase().contains("tqc")){
-                reportTQC.show();
+                //reportTQC.show();
+
+                Intent intentReport = new Intent(getBaseContext(),ReportActivity.class);
+                intentReport.putExtra("Fwork", fworkActual);
+                intentReport.putExtra("MfseqOrder", mfseqId );
+
+
+                startActivity(intentReport);
             }
         }
     }
