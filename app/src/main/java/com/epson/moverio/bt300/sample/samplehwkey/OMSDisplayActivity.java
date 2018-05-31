@@ -19,34 +19,28 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.Result;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,7 +106,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_screen);
-        img=(ImageView)this.findViewById(R.id.imageReport);
 
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
@@ -682,16 +675,36 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
                             break;
                         case KeyEvent.KEYCODE_DPAD_UP:
-                            Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
-                            File imagesFolder = new File(Environment.getExternalStorageDirectory(),"Test");
-                            imagesFolder.mkdirs();
+/*Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
-                            File image = new File(imagesFolder, "foto.jpg");
+
                             Uri uriSavedImage = Uri.fromFile(image);
 
                             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
                             startActivityForResult(cameraIntent, 1);
+*/
+                            /**
+                             * New URI form
+                             */
+                            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                                Uri photoURI = null;
+                                try {
+                                    File imagesFolder = new File(Environment.getExternalStorageDirectory(),"Test");
+                                    imagesFolder.mkdirs();
+                                    File image = new File(imagesFolder, "foto.jpg");
+                                    String path = image.getAbsolutePath();
+                                    photoURI = FileProvider.getUriForFile(OMSDisplayActivity.this,
+                                            getString(R.string.file_provider_authority),
+                                            image);
+
+                                } catch (Exception ex) {
+                                    Log.e("TakePicture", ex.getMessage());
+                                }
+                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                                startActivityForResult(takePictureIntent, 1/*PHOTO_REQUEST_CODE*/);
+                            }
                             break;
                         default:
                             break;
@@ -707,8 +720,19 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         //Comprovamos que la foto se a realizado
         if (requestCode == 1 && resultCode == RESULT_OK) {
             //Creamos un bitmap con la imagen recientemente almacenada en la memoria
-            Bitmap bMap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()+"/AndroidFacil/"+"foto.jpg");
+            img=(ImageView)reportTQC.findViewById(R.id.imageReport);
+            Bitmap bMap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()+"/Test/"+"foto.jpg");
             //Añadimos el bitmap al imageView para mostrarlo por pantalla
+
+            /**
+             * Decision sugested
+             *
+             * Defects
+             *
+             * (Symptom reason)
+             *
+             */
+
             Log.d("Guardada","Foto");
             img.setImageBitmap(bMap);
         }
