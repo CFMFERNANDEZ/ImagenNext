@@ -19,7 +19,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,13 +34,26 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ReportActivity extends AppCompatActivity {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class ReportActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener {
 
     private AlertDialog reportTQC;
     private View mContentView;
     private View componentView;
     private ImageView img;
+    private fworkModel fworkActual;
+    private String mfseqId;
+    private APIService apiService;
+    private Spinner spinner;
+    private SpeechRecognizerManager mSpeechRecognizerManager;
 
     private String mfseqOrder;
     private fworkModel fWork;
@@ -52,9 +69,12 @@ public class ReportActivity extends AppCompatActivity {
         fWork = (fworkModel)getIntent().getSerializableExtra("Fwork");
         actualPerson = (Personnel) getIntent().getSerializableExtra("Person");
         Log.d("INSIDEREPORT", mfseqOrder + "-" + fWork);
+        fworkActual =(fworkModel) getIntent().getSerializableExtra("Fwork");
+        mfseqId = getIntent().getStringExtra("MfseqOrder");
         //mContentView = findViewById(R.id.oms_image);
         //setImmersive();
         //createReport();
+        new availIssues().execute();
     }
 
     @Override
@@ -62,7 +82,8 @@ public class ReportActivity extends AppCompatActivity {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_DPAD_DOWN:
-
+                    mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
+                    mSpeechRecognizerManager.setOnResultListner(this);
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
 
@@ -118,6 +139,50 @@ public class ReportActivity extends AppCompatActivity {
         }
     }
 
+
+    public class availIssues extends AsyncTask<Void,Void,Void>{
+        @Override
+        protected Void doInBackground(Void... voids){
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.166");
+            final String url = "http://" + server +":8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            apiService = retrofit.create(APIService.class);
+            Call<List<Issue>> availIssues = apiService.getAvailIssues();
+            availIssues.enqueue(new Callback<List<Issue>>() {
+                @Override
+                public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
+                    if(response.isSuccessful() && response.body().size() > 0){
+                        spinner = (Spinner) findViewById(R.id.spinnerAvailIssue);
+                        ArrayList<String> Issues = new ArrayList<String>();
+                        int i = 0;
+                        for(Issue issue: response.body()){
+                            Issues.add(issue.getDscr());
+                            i++;
+                        }
+                        Log.d("AvailIssues",Issues.toString()+"");
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);;
+                        spinner.setAdapter(adapter);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Issue>> call, Throwable t) {
+                    Log.d("Error","Un error a ocurrido al llenar la lista");
+                }
+            });
+            return null;
+        }
+
+    }
+
     public class reportTQC extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
@@ -155,4 +220,15 @@ public class ReportActivity extends AppCompatActivity {
             return null;
         }
     }
+
+    @Override
+    public void OnResult(ArrayList<String> commands) {
+        for(String command:commands)
+        {
+            if (command.toLowerCase().contains("Report") ) {
+
+            }
+        }
+    }
+
 }

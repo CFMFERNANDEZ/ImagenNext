@@ -76,4 +76,13 @@ public interface APIService {
     @POST("tqcservice/tqcasm")
     Call<TQCasm> reportTQC(@Body TQCasm tqc);
 
+
+    //Get available issues
+    @Headers({
+            "lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("availissues/asm")
+    Call<List<Issue>> getAvailIssues();
+
 }
