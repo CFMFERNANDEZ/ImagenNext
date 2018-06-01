@@ -60,6 +60,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private Personnel actualPerson;
 
     public static String ID;
+    public String mfseqorder_id;
     public static OrdersModel auxOrderModel;
 
     public static String IdOms;
@@ -143,6 +144,8 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                         orderIntent.putExtra("order",auxOrderModel);
                         orderIntent.putExtra("fworkList", new fworkModelList(auxList));
                         orderIntent.putExtra("mfseq_id", ID);
+                        orderIntent.putExtra("mfseqorder_id", mfseqorder_id);
+                        orderIntent.putExtra("Person", actualPerson);
                         startActivityForResult(orderIntent, 100);
                     }else{
                         Toast.makeText(getApplicationContext(), "Order not valid", Toast.LENGTH_LONG).show();
@@ -211,6 +214,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                 item = values.get(i);
                 Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                 ID = item.getLotno();
+                mfseqorder_id = item.getId();
                 auxOrderModel = item;
                 new fwork().execute();
             }
@@ -281,6 +285,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                     OrdersModel item = (OrdersModel) listView.getAdapter().getItem(position);
                     Toast.makeText(getApplicationContext(), item.getAsm_dscr() + " selected", Toast.LENGTH_LONG).show();
                     ID = item.getLotno();
+                    mfseqorder_id = item.getId();
                     auxOrderModel = item;
                     new fwork().execute();
                 }

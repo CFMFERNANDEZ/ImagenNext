@@ -7,8 +7,10 @@ package com.epson.moverio.bt300.sample.samplehwkey;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface APIService {
@@ -69,5 +71,9 @@ public interface APIService {
     })
     @GET("image/{path}")
     Call<List<Image>> getImageByPath(@Path("path") String path);
+
+    //Service for reportTQC
+    @POST("tqcservice/tqcasm")
+    Call<TQCasm> reportTQC(@Body TQCasm tqc);
 
 }

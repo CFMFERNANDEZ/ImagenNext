@@ -88,6 +88,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private APIService apiService;
     private HashMap<String, Image> mapImages;
     private String mfseqId;
+    private String mfseqorder_Id;
     private View iconMet;
     private View iconMat;
     private ZXingScannerView mScannerView;
@@ -99,6 +100,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private TrackingListAdapter trackingAdapter;
     private MetricListAdapter metricListAdapter;
     private CheckListAdapter checkListAdapter;
+
+    private Personnel actualPerson;
 
     private static String font_path = "font/EUEXCF.TTF";
     private static Typeface TF;
@@ -114,7 +117,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
         mfseqId = getIntent().getStringExtra("mfseq_id");
+        mfseqorder_Id = getIntent().getStringExtra("mfseqorder_id");
         order = (OrdersModel) getIntent().getSerializableExtra("order");
+        actualPerson = (Personnel) getIntent().getSerializableExtra("Person");
         mSpeechRecognizerManager = new SpeechRecognizerManager(this);
         mSpeechRecognizerManager.setOnResultListner(this);
         mImageView = (ImageView) findViewById(R.id.oms_image);
@@ -273,9 +278,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
                 Intent intentReport = new Intent(getBaseContext(),ReportActivity.class);
                 intentReport.putExtra("Fwork", fworkActual);
-                intentReport.putExtra("MfseqOrder", mfseqId );
-
-
+                intentReport.putExtra("MfseqOrder", mfseqorder_Id );
+                intentReport.putExtra("Person", actualPerson);
                 startActivity(intentReport);
             }
         }
