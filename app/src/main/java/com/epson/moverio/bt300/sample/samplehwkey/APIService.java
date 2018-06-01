@@ -70,4 +70,13 @@ public interface APIService {
     @GET("image/{path}")
     Call<List<Image>> getImageByPath(@Path("path") String path);
 
+
+    //Get available issues
+    @Headers({
+            "lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("availissues/asm")
+    Call<List<Issue>> getAvailIssues();
+
 }
