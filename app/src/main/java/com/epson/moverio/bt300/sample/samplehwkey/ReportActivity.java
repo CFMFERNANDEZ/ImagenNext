@@ -23,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 
 
 import java.io.ByteArrayOutputStream;
@@ -53,12 +54,22 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private String mfseqId;
     private APIService apiService;
     private Spinner spinner;
+    private Spinner spinnerPrio;
+    private Spinner spinnerDefect;
     private SpeechRecognizerManager mSpeechRecognizerManager;
+    private TextView textOrd;
+    private TextView textWorkS;
 
     private String mfseqOrder;
+    private String WS;
     private fworkModel fWork;
     private Bitmap bitMap;
     private Personnel actualPerson;
+
+    private List<Issue> auxIssues = new ArrayList<>();
+    private List<priorities> auxPrio = new ArrayList<>();
+    private List<Defects> auxDefects = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -70,11 +81,20 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         actualPerson = (Personnel) getIntent().getSerializableExtra("Person");
         Log.d("INSIDEREPORT", mfseqOrder + "-" + fWork);
         fworkActual =(fworkModel) getIntent().getSerializableExtra("Fwork");
-        mfseqId = getIntent().getStringExtra("MfseqOrder");
+        mfseqId = getIntent().getStringExtra("mfseqId");
+        WS = getIntent().getStringExtra("WS");
         //mContentView = findViewById(R.id.oms_image);
         //setImmersive();
         //createReport();
         new availIssues().execute();
+        new priority().execute();
+        new defects().execute();
+
+        textOrd = (TextView) findViewById(R.id.textOrder);
+        textWorkS = (TextView) findViewById(R.id.textWS);
+
+        textOrd.setText(mfseqId);
+        textWorkS.setText(WS);
     }
 
     @Override
@@ -159,6 +179,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 @Override
                 public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
+                        auxIssues = response.body();
                         spinner = (Spinner) findViewById(R.id.spinnerAvailIssue);
                         ArrayList<String> Issues = new ArrayList<String>();
                         int i = 0;
@@ -168,8 +189,9 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                         }
                         Log.d("AvailIssues",Issues.toString()+"");
                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);;
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
                         spinner.setAdapter(adapter);
+                        spinner.setSelection(3);
                     }
                 }
 
@@ -180,7 +202,49 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             });
             return null;
         }
+    }
 
+    public class priority extends AsyncTask<Void,Void,Void>{
+        @Override
+        protected Void doInBackground(Void... voids) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.166");
+            final String url = "http://" + server + ":8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            apiService = retrofit.create(APIService.class);
+            Call<List<priorities>> prio = apiService.getPriority();
+            prio.enqueue(new Callback<List<priorities>>() {
+                @Override
+                public void onResponse(Call<List<priorities>> call, Response<List<priorities>> response) {
+                    if(response.isSuccessful() && response.body().size() > 0){
+                        auxPrio = response.body();
+                        spinnerPrio = (Spinner) findViewById(R.id.spinnepriority);
+                        ArrayList<String> prios = new ArrayList<String>();
+                        int i = 0;
+                        for(priorities p: response.body()){
+                            prios.add(p.getC_dscr());
+                            i++;
+                        }
+                        Log.d("AvailIssues",prios.toString()+"");
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, prios);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
+                        spinnerPrio.setAdapter(adapter);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<priorities>> call, Throwable t) {
+
+                }
+            });
+            return null;
+        }
     }
 
     public class reportTQC extends AsyncTask<Void,Void,Void> {
@@ -201,8 +265,29 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             bitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream .toByteArray();
 
+            String auxIdPriority="";
+            String auxIdDefect="";
+            String auxIdAvailIssue="";
+            Log.d("Prioridad seleccionada",spinner.getSelectedItemId()+"");
+            for(priorities p: auxPrio){
+                if(p.getC_dscr().equals(spinnerPrio.getSelectedItemId())){
+                    auxIdPriority = p.getC_id().toString();
+                }
+            }
+            for(Defects d: auxDefects){
+                if(d.getC_dscr().equals(spinnerDefect.getSelectedItemId())){
+                    auxIdDefect = d.getC_id().toString();
+                }
+            }
+            for(Issue i : auxIssues){
+                if(i.getDscr().equals(spinnerPrio.getSelectedItemId())){
+                    auxIdAvailIssue = i.getId().toString();
+                }
+            }
+
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
+            //TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
+            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect );
             final Call<TQCasm> response = apiService.reportTQC( tqc );  //Return success
 
             response.enqueue(new Callback<TQCasm>() {
@@ -221,12 +306,85 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         }
     }
 
+    public class defects extends AsyncTask<Void,Void,Void>{
+        @Override
+        protected Void doInBackground(Void... voids) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.166");
+            final String url = "http://" + server + ":8080/WebServicesCellFusion/";
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    //.client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            apiService = retrofit.create(APIService.class);
+            Call<List<Defects>> def = apiService.getDefects(mfseqOrder,fworkActual.getC_Id(),actualPerson.getC_id());
+            def.enqueue(new Callback<List<Defects>>() {
+                @Override
+                public void onResponse(Call<List<Defects>> call, Response<List<Defects>> response) {
+                    if(response.isSuccessful() && response.body().size() > 0){
+                        auxDefects = response.body();
+                        spinnerDefect = (Spinner) findViewById(R.id.spinnerdefect);
+                        ArrayList<String> defs = new ArrayList<String>();
+                        int i = 0;
+                        for(Defects d: response.body()){
+                            defs.add(d.getC_dscr());
+                            i++;
+                        }
+                        Log.d("AvailIssues",defs.toString()+"");
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, defs);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+                        spinnerDefect.setAdapter(adapter);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Defects>> call, Throwable t) {
+
+                }
+            });
+            return null;
+        }
+    }
+
     @Override
     public void OnResult(ArrayList<String> commands) {
         for(String command:commands)
         {
-            if (command.toLowerCase().contains("Report") ) {
+            if (command.toLowerCase().contains("picture") ) {
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    Uri photoURI = null;
+                    try {
+                        File imagesFolder = new File(Environment.getExternalStorageDirectory(), "Test");
+                        imagesFolder.mkdirs();
+                        File image = new File(imagesFolder, "foto.jpg");
+                        String path = image.getAbsolutePath();
+                        photoURI = FileProvider.getUriForFile(ReportActivity.this,
+                                getString(R.string.file_provider_authority),
+                                image);
 
+                    } catch (Exception ex) {
+                        Log.e("TakePicture", ex.getMessage());
+                    }
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(takePictureIntent, 1/*PHOTO_REQUEST_CODE*/);
+                }
+            }
+            if(command.toLowerCase().contains("defect")){
+                spinnerDefect.performClick();
+                Log.d("Focus",spinner+"");
+                Log.d("Focus",spinnerDefect+"");
+                Log.d("Focus",spinnerPrio+"");
+                Log.d("Focus","");
+            }
+            if(command.toLowerCase().contains("decision")){
+                spinner.performClick();
+            }
+            if(command.toLowerCase().contains("priority")){
+                spinnerPrio.performClick();
             }
         }
     }

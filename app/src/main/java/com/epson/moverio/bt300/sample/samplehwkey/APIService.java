@@ -85,4 +85,19 @@ public interface APIService {
     @GET("availissues/asm")
     Call<List<Issue>> getAvailIssues();
 
+    //Get priority
+    @Headers({
+            "lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("ctbprovider/CTB9032")
+    Call<List<priorities>> getPriority();
+
+    //Get defect provider
+    @Headers({
+            "lang: EN",
+            "database: PLW-QAS-S"
+    })
+    @GET("defectprovider/tqcasm/{mfseqorder}/{fwork}/{personnel}")
+    Call<List<Defects>> getDefects(@Path("mfseqorder") String mfseqorder, @Path("fwork") String fwork, @Path("personnel") String personnel);
 }

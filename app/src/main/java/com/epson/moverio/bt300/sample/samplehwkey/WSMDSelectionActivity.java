@@ -336,6 +336,7 @@ public class WSMDSelectionActivity extends AppCompatActivity implements  ZXingSc
                             public void onResponse(Call<List<WSMDmodel>> call, Response<List<WSMDmodel>> response) {
                                 if(response.isSuccessful()&& response.body().size() > 0) {
                                     orderIntent.putExtra("WSMD", (WSMDmodel)response.body().get(0));
+                                    orderIntent.putExtra("WS",ID);
                                     startActivity(orderIntent);
                                 }else{
                                     Toast.makeText(getApplicationContext(), "Workstation not valid", Toast.LENGTH_LONG).show();

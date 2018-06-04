@@ -88,6 +88,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private APIService apiService;
     private HashMap<String, Image> mapImages;
     private String mfseqId;
+    private String WS;
     private String mfseqorder_Id;
     private View iconMet;
     private View iconMat;
@@ -117,6 +118,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
         mfseqId = getIntent().getStringExtra("mfseq_id");
+        WS = getIntent().getStringExtra("WS");
         mfseqorder_Id = getIntent().getStringExtra("mfseqorder_id");
         order = (OrdersModel) getIntent().getSerializableExtra("order");
         actualPerson = (Personnel) getIntent().getSerializableExtra("Person");
@@ -280,6 +282,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 intentReport.putExtra("Fwork", fworkActual);
                 intentReport.putExtra("MfseqOrder", mfseqorder_Id );
                 intentReport.putExtra("Person", actualPerson);
+                intentReport.putExtra("mfseqId",mfseqId);
+                intentReport.putExtra("WS",WS);
                 startActivity(intentReport);
             }
         }

@@ -14,8 +14,10 @@ public class TQCasm {
     private String fwork;
     private String mfgOrder;
     private String availIssue;
+    private String priority;
+    private String defect;
 
-    public TQCasm(String database, String lang, String image, String fwork, String mfgOrder, String personnel, String availIssue){
+    public TQCasm(String database, String lang, String image, String fwork, String mfgOrder, String personnel, String availIssue, String priority, String defect){
         this.database = database;
         this. lang = lang;
         this.image = image;
@@ -23,5 +25,7 @@ public class TQCasm {
         this.mfgOrder = mfgOrder;
         this.personnel = personnel;
         this.availIssue = availIssue;
+        this.priority = priority;
+        this.defect = defect;
     }
 }

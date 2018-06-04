@@ -60,6 +60,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
     private Personnel actualPerson;
 
     public static String ID;
+    public String WS;
     public String mfseqorder_id;
     public static OrdersModel auxOrderModel;
 
@@ -84,6 +85,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
 
         //HERE WE READ THE VALUE SENDED PREVIUSLY
         WSMD  = (WSMDmodel) getIntent().getSerializableExtra("WSMD");
+        WS = getIntent().getStringExtra("WS");
         actualPerson  = (Personnel) getIntent().getSerializableExtra("Person");
         fillText();
         OrdersModelList orders = (OrdersModelList)getIntent().getSerializableExtra("Orders");
@@ -146,6 +148,7 @@ public class SelectionActivity extends Activity implements SpeechRecognizerManag
                         orderIntent.putExtra("mfseq_id", ID);
                         orderIntent.putExtra("mfseqorder_id", mfseqorder_id);
                         orderIntent.putExtra("Person", actualPerson);
+                        orderIntent.putExtra("WS",WS);
                         startActivityForResult(orderIntent, 100);
                     }else{
                         Toast.makeText(getApplicationContext(), "Order not valid", Toast.LENGTH_LONG).show();
