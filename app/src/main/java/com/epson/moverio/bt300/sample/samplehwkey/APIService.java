@@ -74,7 +74,7 @@ public interface APIService {
 
     //Service for reportTQC
     @POST("tqcservice/tqcasm")
-    Call<TQCasm> reportTQC(@Body TQCasm tqc);
+    Call<ReportTqcResponse> reportTQC(@Body TQCasm tqc);
 
 
     //Get available issues
@@ -100,4 +100,8 @@ public interface APIService {
     })
     @GET("defectprovider/tqcasm/{mfseqorder}/{fwork}/{personnel}")
     Call<List<Defects>> getDefects(@Path("mfseqorder") String mfseqorder, @Path("fwork") String fwork, @Path("personnel") String personnel);
+
+    //Service for asign Image to Record
+    @POST("image/imgagn")
+    Call<List<SimpleResponse>> asignImage(@Body FullImage fullImage);
 }

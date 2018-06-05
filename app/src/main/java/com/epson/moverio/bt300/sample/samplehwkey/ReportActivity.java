@@ -1,6 +1,8 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
@@ -30,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,6 +41,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -155,7 +160,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
 
             Log.d("Guardada","Foto");
             img.setImageBitmap(bitMap);
-            new reportTQC().execute();
+//            new reportTQC().execute();
         }
     }
 
@@ -288,23 +293,68 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
             //TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
             TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect );
-            final Call<TQCasm> response = apiService.reportTQC( tqc );  //Return success
+            final Call<ReportTqcResponse> response = apiService.reportTQC( tqc );  //Return success
 
-            response.enqueue(new Callback<TQCasm>() {
+            response.enqueue(new Callback<ReportTqcResponse>() {
                 @Override
-                public void onResponse(Call<TQCasm> call, Response<TQCasm> response) {
+                public void onResponse(Call<ReportTqcResponse> call, Response<ReportTqcResponse> response) {
                     if(response.isSuccessful()) {
                         Log.d("SUCCESS",response+"");
                     }
                 }
                 @Override
-                public void onFailure(Call<TQCasm> call, Throwable t) {
+                public void onFailure(Call<ReportTqcResponse> call, Throwable t) {
                     Log.e("Error", t+"");
                 }
             });
             return null;
         }
     }
+
+    /*
+     * SEND-FULL IMAGE
+     */
+    public class sendFullImage extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids){
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String server = prefs.getString("cf_server", "192.168.1.181");
+            final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
+
+            final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(20, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            APIService apiService = retrofit.create(APIService.class);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream .toByteArray();
+            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            FullImage fullImage = new FullImage("[TQC:954101]", "PLW-QAS-S","EN", encoded);
+            Call<List<SimpleResponse>> response = apiService.asignImage(fullImage);  //Return success
+            response.enqueue(new Callback<List<SimpleResponse>>() {
+                @Override
+                public void onResponse(Call<List<SimpleResponse>> call, Response<List<SimpleResponse>> response) {
+                    if(response.isSuccessful()) {
+//                        addNotification();
+                        Log.d("SUCCESS",response+"");
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<SimpleResponse>> call, Throwable t) {
+                    Log.e("Error", t+"");
+                }
+            });
+            return null;
+        }
+    }
+
 
     public class defects extends AsyncTask<Void,Void,Void>{
         @Override
@@ -387,6 +437,27 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 spinnerPrio.performClick();
             }
         }
+    }
+
+    public void sendimage(View v){
+        new sendFullImage().execute();
+    }
+
+    public void addNotification(View view) {
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.metrics)
+                        .setContentTitle("Notifications Example")
+                        .setContentText("This is a test notification");
+
+        Intent notificationIntent = new Intent(this, ReportActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
+        manager.notify(0, builder.build());
     }
 
 }
