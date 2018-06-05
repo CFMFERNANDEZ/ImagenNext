@@ -88,6 +88,8 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private List<priorities> auxPrio = new ArrayList<>();
     private List<Defects> auxDefects = new ArrayList<>();
 
+    private boolean comment = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -164,7 +166,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     public void clickReport(View view){
         new reportTQC().execute();
     }
-
 
     public class availIssues extends AsyncTask<Void,Void,Void>{
         @Override
@@ -412,40 +413,62 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
 
     @Override
     public void OnResult(ArrayList<String> commands) {
-        for(String command:commands)
-        {
-            if (command.toLowerCase().contains("picture") ) {
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    Uri photoURI = null;
-                    try {
-                        File imagesFolder = new File(Environment.getExternalStorageDirectory(), "Test");
-                        imagesFolder.mkdirs();
-                        File image = new File(imagesFolder, "foto.jpg");
-                        String path = image.getAbsolutePath();
-                        photoURI = FileProvider.getUriForFile(ReportActivity.this,
-                                getString(R.string.file_provider_authority),
-                                image);
+        if(!comment) {
+            for (String command : commands) {
+                if (command.toLowerCase().contains("picture")) {
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        Uri photoURI = null;
+                        try {
+                            File imagesFolder = new File(Environment.getExternalStorageDirectory(), "Test");
+                            imagesFolder.mkdirs();
+                            File image = new File(imagesFolder, "foto.jpg");
+                            String path = image.getAbsolutePath();
+                            photoURI = FileProvider.getUriForFile(ReportActivity.this,
+                                    getString(R.string.file_provider_authority),
+                                    image);
 
-                    } catch (Exception ex) {
-                        Log.e("TakePicture", ex.getMessage());
+                        } catch (Exception ex) {
+                            Log.e("TakePicture", ex.getMessage());
+                        }
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        startActivityForResult(takePictureIntent, 1/*PHOTO_REQUEST_CODE*/);
                     }
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(takePictureIntent, 1/*PHOTO_REQUEST_CODE*/);
+                }
+                if (command.toLowerCase().contains("defect")) {
+                    spinnerDefect.performClick();
+                    Log.d("Focus", spinner + "");
+                    Log.d("Focus", spinnerDefect + "");
+                    Log.d("Focus", spinnerPrio + "");
+                    Log.d("Focus", "");
+                }
+                if (command.toLowerCase().contains("decision")) {
+                    spinner.performClick();
+                }
+                if (command.toLowerCase().contains("priority")) {
+                    spinnerPrio.performClick();
+                }
+                if (command.toLowerCase().contains("comments")) {
+                    EditText editText = findViewById(R.id.comments);
+
+                    editText.requestFocus();
+
+                    mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
+                    mSpeechRecognizerManager.setOnResultListner(this);
+                    comment = true;
                 }
             }
-            if(command.toLowerCase().contains("defect")){
-                spinnerDefect.performClick();
-                Log.d("Focus",spinner+"");
-                Log.d("Focus",spinnerDefect+"");
-                Log.d("Focus",spinnerPrio+"");
-                Log.d("Focus","");
-            }
-            if(command.toLowerCase().contains("decision")){
-                spinner.performClick();
-            }
-            if(command.toLowerCase().contains("priority")){
-                spinnerPrio.performClick();
+        }else{
+            EditText editText = findViewById(R.id.comments);
+            editText.requestFocus();
+
+            String aux = editText.getText().toString();
+            if(commands.get(0).toLowerCase().contains("finish")){
+                comment = false;
+            }else {
+                aux += " " + commands.get(0).toLowerCase();
+                editText.setText("");
+                editText.setText(aux);
             }
         }
     }
