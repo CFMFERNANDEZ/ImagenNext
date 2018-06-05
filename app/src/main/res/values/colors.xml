@@ -6,6 +6,9 @@
     <color name="colorAccent2">#008ecf</color>
     <color name="black_overlay">#66000000</color>
 
+    <color name="spinner_background">#e1e1e1</color>
+    <color name="spinner_text">#2f344c</color>
+
     <color name="smartPrimary">#2f344c</color>
     <color name="smartPrimaryDark">#2f344c</color>
     <color name="smartAccent">#2f344c</color>
