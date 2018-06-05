@@ -1,6 +1,9 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
@@ -10,8 +13,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
@@ -66,6 +71,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private TextView textOrd;
     private TextView textWorkS;
     private EditText textComments;
+    private  NotificationCompat.Builder mBuilder;
+    private NotificationManager notificationManager;
+    int notificationId = 1;
+    int notificationProgress =0;
+    int PROGRESS_MAX = 100;
 
     private String mfseqOrder;
     private String WS;
@@ -87,7 +97,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         mfseqOrder = getIntent().getStringExtra("MfseqOrder");
         fWork = (fworkModel)getIntent().getSerializableExtra("Fwork");
         actualPerson = (Personnel) getIntent().getSerializableExtra("Person");
-        Log.d("INSIDEREPORT", mfseqOrder + "-" + fWork);
         fworkActual =(fworkModel) getIntent().getSerializableExtra("Fwork");
         mfseqId = getIntent().getStringExtra("mfseqId");
         WS = getIntent().getStringExtra("WS");
@@ -144,24 +153,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("LLEGA","si llega");
         //Comprovamos que la foto se a realizado
         if (requestCode == 1 && resultCode == RESULT_OK) {
             //Creamos un bitmap con la imagen recientemente almacenada en la memoria
             img=(ImageView)this.findViewById(R.id.imageReport);
             bitMap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()+"/Test/"+"foto.jpg");
-            //Añadimos el bitmap al imageView para mostrarlo por pantalla
-
-            /**
-             * Decision sugested
-             *
-             * Defects
-             *
-             * (Symptom reason)
-             *
-             */
-
-            Log.d("Guardada","Foto");
             img.setImageBitmap(bitMap);
         }
     }
@@ -197,7 +193,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                             Issues.add(issue.getDscr());
                             i++;
                         }
-                        Log.d("AvailIssues",Issues.toString()+"");
                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
                         spinner.setAdapter(adapter);
@@ -241,7 +236,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                             prios.add(p.getC_dscr());
                             i++;
                         }
-                        Log.d("AvailIssues",prios.toString()+"");
                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, prios);
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
                         spinnerPrio.setAdapter(adapter);
@@ -310,7 +304,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             //TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
             TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect, comments );
             final Call<ReportTqcResponse> response = apiService.reportTQC( tqc );  //Return success
-
             response.enqueue(new Callback<ReportTqcResponse>() {
                 @Override
                 public void onResponse(Call<ReportTqcResponse> call, Response<ReportTqcResponse> response) {
@@ -360,6 +353,8 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                     if(response.isSuccessful()) {
 //                        addNotification();
                         Log.d("SUCCESS",response+"");
+                        mBuilder.setContentText("Upload complete").setProgress(0,0,false);
+                        notificationManager.notify(notificationId, mBuilder.build());
                     }
                 }
                 @Override
@@ -460,20 +455,40 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     }
 
     public void addNotification(View view) {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.metrics)
-                        .setContentTitle("Notifications Example")
-                        .setContentText("This is a test notification");
+        mBuilder  = new NotificationCompat.Builder(getApplicationContext(), "DEFAULT_CHANNEL")
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setContentTitle("CellFusion")
+                .setContentText("Full image uploaded")
+                .setSmallIcon(R.drawable.metrics)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("DEFAULT_CHANNEL",
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+        mBuilder.setProgress(PROGRESS_MAX, notificationProgress, false);
+        notificationManager.notify(notificationId, mBuilder.build() );
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for( int i = 0; i < 20; i++){
+                    new Handler().postDelayed(new Runnable(){
+                        @Override
+                        public void run() {
+                            mBuilder.setProgress(PROGRESS_MAX,notificationProgress,false);
+                            notificationManager.notify(notificationId, mBuilder.build());
+                            notificationProgress += 5;
+                        }
+                    }, 2000);
+                }
+            }
+        });
 
-        Intent notificationIntent = new Intent(this, ReportActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(contentIntent);
 
-        // Add as notification
-        NotificationManager manager = (NotificationManager) getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
-        manager.notify(0, builder.build());
     }
 
 }
