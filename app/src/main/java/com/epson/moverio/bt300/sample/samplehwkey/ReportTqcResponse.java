@@ -5,25 +5,25 @@ package com.epson.moverio.bt300.sample.samplehwkey;
  */
 
 public class ReportTqcResponse {
-    public String status;
-    public String repNumber;
-    public String idRec;
+    public String c_id;
+    public String c_code;
+    public String c_repno;
 
-    public ReportTqcResponse(String status, String repNumber, String idRec){
-        this.status = status;
-        this.repNumber = repNumber;
-        this.idRec = idRec;
+    public ReportTqcResponse(String c_id, String c_code, String c_repno){
+        this.c_id = c_id;
+        this.c_code = c_code;
+        this.c_repno = c_repno;
     }
 
     public String getIdRec() {
-        return idRec;
+        return c_id;
     }
 
-    public String getStatus(){
-        return this.status;
+    public String getCode(){
+        return this.c_code;
     }
 
     public String getRepNumber() {
-        return repNumber;
+        return c_repno;
     }
 }
