@@ -33,6 +33,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="52dp"
+        android:onClick="clickReport"
         android:text="Report" />
 
     <Spinner
@@ -123,12 +124,12 @@
         android:id="@+id/textView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/comment_input"
+        android:layout_alignBaseline="@+id/comments"
         android:layout_centerHorizontal="true"
         android:text="Comments" />
 
     <EditText
-        android:id="@+id/comment_input"
+        android:id="@+id/comments"
         android:layout_width="389dp"
         android:layout_height="63dp"
         android:layout_alignParentEnd="true"

@@ -20,6 +20,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -59,12 +60,14 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private TextView textOrd;
     private TextView textWorkS;
+    private EditText textComments;
 
     private String mfseqOrder;
     private String WS;
     private fworkModel fWork;
     private Bitmap bitMap;
     private Personnel actualPerson;
+    private String comments="";
 
     private List<Issue> auxIssues = new ArrayList<>();
     private List<priorities> auxPrio = new ArrayList<>();
@@ -155,8 +158,10 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
 
             Log.d("Guardada","Foto");
             img.setImageBitmap(bitMap);
-            new reportTQC().execute();
         }
+    }
+    public void clickReport(View view){
+        new reportTQC().execute();
     }
 
 
@@ -268,26 +273,37 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             String auxIdPriority="";
             String auxIdDefect="";
             String auxIdAvailIssue="";
-            Log.d("Prioridad seleccionada",spinner.getSelectedItemId()+"");
+            int i = 0;
             for(priorities p: auxPrio){
-                if(p.getC_dscr().equals(spinnerPrio.getSelectedItemId())){
+                if(i == spinnerPrio.getSelectedItemPosition() ){
                     auxIdPriority = p.getC_id().toString();
+                    i = 0;
+                    break;
                 }
+                i++;
             }
             for(Defects d: auxDefects){
-                if(d.getC_dscr().equals(spinnerDefect.getSelectedItemId())){
+                if(i == spinnerDefect.getSelectedItemPosition()){
                     auxIdDefect = d.getC_id().toString();
+                    i=0;
+                    break;
                 }
+                i++;
             }
-            for(Issue i : auxIssues){
-                if(i.getDscr().equals(spinnerPrio.getSelectedItemId())){
-                    auxIdAvailIssue = i.getId().toString();
+            for(Issue issue : auxIssues){
+                if(i == spinner.getSelectedItemPosition()){
+                    auxIdAvailIssue = issue.getId().toString();
+                    i=0;
+                    break;
                 }
+                i++;
             }
 
+            EditText auxComments =(EditText) findViewById(R.id.comments);
+            comments = auxComments.getText().toString();
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
             //TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
-            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect );
+            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect, comments );
             final Call<TQCasm> response = apiService.reportTQC( tqc );  //Return success
 
             response.enqueue(new Callback<TQCasm>() {
