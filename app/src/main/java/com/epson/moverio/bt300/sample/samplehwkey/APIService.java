@@ -74,7 +74,7 @@ public interface APIService {
 
     //Service for reportTQC
     @POST("tqcservice/tqcasm")
-    Call<ReportTqcResponse> reportTQC(@Body TQCasm tqc);
+    Call<List<ReportTqcResponse>> reportTQC(@Body TQCasm tqc);
 
 
     //Get available issues

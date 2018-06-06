@@ -1,6 +1,8 @@
 package com.epson.moverio.bt300.sample.samplehwkey;
 
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
@@ -11,8 +13,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
@@ -29,15 +33,15 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
-import android.widget.TabWidget;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -47,7 +51,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
@@ -79,13 +84,21 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private TextView labelComments;
 
     private EditText textComments;
+    private NotificationCompat.Builder mBuilder;
+    private NotificationManager notificationManager;
+    int notificationId = 1;
+    int notificationProgress =0;
+    int PROGRESS_MAX = 100;
+    private  Timer t;
 
     private String mfseqOrder;
     private String WS;
     private fworkModel fWork;
     private Bitmap bitMap;
+    private Bitmap resizedBitMap;
     private Personnel actualPerson;
     private String comments="";
+    private ReportTqcResponse tqcResult;
 
     private List<Issue> auxIssues = new ArrayList<>();
     private List<priorities> auxPrio = new ArrayList<>();
@@ -107,7 +120,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         mfseqOrder = getIntent().getStringExtra("MfseqOrder");
         fWork = (fworkModel)getIntent().getSerializableExtra("Fwork");
         actualPerson = (Personnel) getIntent().getSerializableExtra("Person");
-        Log.d("INSIDEREPORT", mfseqOrder + "-" + fWork);
         fworkActual =(fworkModel) getIntent().getSerializableExtra("Fwork");
         mfseqId = getIntent().getStringExtra("mfseqId");
         WS = getIntent().getStringExtra("WS");
@@ -183,29 +195,27 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("LLEGA","si llega");
         //Comprovamos que la foto se a realizado
         if (requestCode == 1 && resultCode == RESULT_OK) {
             //Creamos un bitmap con la imagen recientemente almacenada en la memoria
             img=(ImageView)this.findViewById(R.id.imageReport);
             bitMap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()+"/Test/"+"foto.jpg");
-            //Añadimos el bitmap al imageView para mostrarlo por pantalla
-
-            /**
-             * Decision sugested
-             *
-             * Defects
-             *
-             * (Symptom reason)
-             *
-             */
-
-            Log.d("Guardada","Foto");
+            double Height = Double.valueOf(bitMap.getHeight());
+            double Width = Double.valueOf(bitMap.getWidth());
+            double factor = 480/Height;
+            double newWidth = factor*Width;
+            double newHeight = factor* Height;
+            resizedBitMap =  Bitmap.createScaledBitmap(bitMap, (int)newWidth, (int)newHeight, true);
             img.setImageBitmap(bitMap);
         }
     }
     public void clickReport(View view){
-        new reportTQC().execute();
+        if( bitMap != null){
+            Toast.makeText(getApplicationContext(), "Reporting TQC", Toast.LENGTH_LONG);
+            new reportTQC().execute();
+        }else{
+            Toast.makeText(this, "Please take a photo for the report", Toast.LENGTH_LONG);
+        }
     }
 
     public class availIssues extends AsyncTask<Void,Void,Void>{
@@ -305,16 +315,9 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
-                    //.client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
-
             APIService apiService = retrofit.create(APIService.class);
-
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream .toByteArray();
-
             String auxIdPriority="";
             String auxIdDefect="";
             String auxIdAvailIssue="";
@@ -343,23 +346,28 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 }
                 i++;
             }
-
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            resizedBitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream .toByteArray();
+            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
             EditText auxComments =(EditText) findViewById(R.id.comments);
             comments = auxComments.getText().toString();
-            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            addNotification();
             //TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
             TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect, comments );
-            final Call<ReportTqcResponse> response = apiService.reportTQC( tqc );  //Return success
-
-            response.enqueue(new Callback<ReportTqcResponse>() {
+            final Call<List<ReportTqcResponse>> response = apiService.reportTQC( tqc );  //Return success
+            response.enqueue(new Callback<List<ReportTqcResponse>>() {
                 @Override
-                public void onResponse(Call<ReportTqcResponse> call, Response<ReportTqcResponse> response) {
+                public void onResponse(Call<List<ReportTqcResponse>> call, Response<List<ReportTqcResponse>> response) {
                     if(response.isSuccessful()) {
-                        Log.d("SUCCESS",response+"");
+                        if( response.body().size() > 0){
+                            tqcResult = response.body().get(0);
+                            new sendFullImage().execute();
+                        }
                     }
                 }
                 @Override
-                public void onFailure(Call<ReportTqcResponse> call, Throwable t) {
+                public void onFailure(Call<List<ReportTqcResponse>> call, Throwable t) {
                     Log.e("Error", t+"");
                 }
             });
@@ -376,7 +384,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             String server = prefs.getString("cf_server", "192.168.1.181");
             final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
-
             final OkHttpClient okHttpClient = new OkHttpClient.Builder()
                     .connectTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20, TimeUnit.SECONDS)
@@ -392,20 +399,25 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             bitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream .toByteArray();
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            FullImage fullImage = new FullImage("[TQC:954101]", "PLW-QAS-S","EN", encoded);
+            FullImage fullImage = new FullImage(tqcResult.getIdRec(), "PLW-QAS-S","EN", encoded);
             Call<List<SimpleResponse>> response = apiService.asignImage(fullImage);  //Return success
             response.enqueue(new Callback<List<SimpleResponse>>() {
                 @Override
                 public void onResponse(Call<List<SimpleResponse>> call, Response<List<SimpleResponse>> response) {
-                    if(response.isSuccessful()) {
-//                        addNotification();
-                        Log.d("SUCCESS",response+"");
-                    }
+                   t.cancel();
+                   if(response.isSuccessful()) {
+                      Toast.makeText(getApplicationContext(), "TQC Reported", Toast.LENGTH_LONG);
+                      mBuilder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                      mBuilder.setContentText("TQC Reported").setProgress(0,0,false);
+                      notificationManager.notify(notificationId, mBuilder.build());
+                   }
                 }
                 @Override
-                public void onFailure(Call<List<SimpleResponse>> call, Throwable t) {
-                    Log.e("Error", t+"");
+                public void onFailure(Call<List<SimpleResponse>> call, Throwable trgh) {
+                    Log.e("Error", trgh+"");
+                    t.cancel();
                 }
+
             });
             return null;
         }
@@ -497,12 +509,13 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 }
                 if (command.toLowerCase().contains("comments")) {
                     EditText editText = findViewById(R.id.comments);
-
                     editText.requestFocus();
-
                     mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
                     comment = true;
+                }
+                if(command.toLowerCase().contains("send") || command.toLowerCase().contains("report")){
+                    clickReport(null);
                 }
             }
         }else{
@@ -524,21 +537,36 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         new sendFullImage().execute();
     }
 
-    public void addNotification(View view) {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.metrics)
-                        .setContentTitle("Notifications Example")
-                        .setContentText("This is a test notification");
+    public void addNotification() {
+        mBuilder  = new NotificationCompat.Builder(getApplicationContext(), "DEFAULT_CHANNEL")
+                .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setContentTitle("CellFusion")
+                .setContentText("Sending TQC...")
+                .setSmallIcon(R.drawable.cflogowhite)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("DEFAULT_CHANNEL",
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+        mBuilder.setProgress(PROGRESS_MAX, notificationProgress, false);
+        notificationManager.notify(notificationId, mBuilder.build() );
+        mBuilder.setVibrate(null);
+        t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+        @Override
+            public void run() {
+                mBuilder.setVibrate(null);
+                mBuilder.setProgress(PROGRESS_MAX,notificationProgress,false);
+                notificationManager.notify(notificationId, mBuilder.build());
+                notificationProgress += 2;   //Called each time when 1000 milliseconds (1 second) (the period parameter)
+            }},0,1000);
 
-        Intent notificationIntent = new Intent(this, ReportActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(contentIntent);
-
-        // Add as notification
-        NotificationManager manager = (NotificationManager) getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
-        manager.notify(0, builder.build());
     }
 
 }
