@@ -6,11 +6,13 @@ public class Defects implements Serializable {
     private String c_id;
     private String c_dscr;
     private String c_code;
+    private String c_parent;
 
-    public Defects (String c_id, String c_dscr, String c_code){
+    public Defects (String c_id, String c_dscr, String c_code, String c_parent){
         this.c_id = c_id;
         this.c_code = c_code;
         this.c_dscr = c_dscr;
+        this.c_parent = c_parent;
     }
 
     public String getC_id() { return c_id; }
@@ -24,4 +26,8 @@ public class Defects implements Serializable {
     public String getC_code() { return c_code; }
 
     public void setC_code(String c_code) { this.c_code = c_code; }
+
+    public String getC_parent() {
+        return c_parent;
+    }
 }

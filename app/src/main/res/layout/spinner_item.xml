@@ -9,8 +9,11 @@
         android:id="@+id/spinerItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         tools:layout_editor_absoluteX="60dp"
         tools:layout_editor_absoluteY="46dp"
-        android:textColor="@color/black"
+        android:textSize="35dp"
+        android:textColor="@color/smartAccent"
     />
+
 </RelativeLayout>

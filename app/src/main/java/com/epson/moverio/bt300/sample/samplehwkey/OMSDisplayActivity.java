@@ -277,7 +277,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             }
             else if(command.toLowerCase().contains("report") || command.toLowerCase().contains("tqc")){
                 //reportTQC.show();
-
                 Intent intentReport = new Intent(getBaseContext(),ReportActivity.class);
                 intentReport.putExtra("Fwork", fworkActual);
                 intentReport.putExtra("MfseqOrder", mfseqorder_Id );
@@ -285,6 +284,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 intentReport.putExtra("mfseqId",mfseqId);
                 intentReport.putExtra("WS",WS);
                 startActivity(intentReport);
+                break;
             }
         }
     }

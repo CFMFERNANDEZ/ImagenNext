@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -18,22 +19,22 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Spinner;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.net.SocketTimeoutException;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -56,9 +57,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private fworkModel fworkActual;
     private String mfseqId;
     private APIService apiService;
-    private Spinner spinner;
-    private Spinner spinnerPrio;
-    private Spinner spinnerDefect;
+
+    private TextView spinnerIssues;
+    private TextView spinnerPrio;
+    private TextView spinnerDefect;
+
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private TextView textOrd;
     private TextView textWorkS;
@@ -69,6 +72,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     int notificationProgress =0;
     int PROGRESS_MAX = 100;
     private  Timer t;
+    private boolean sendedTQC = false;
 
     private String mfseqOrder;
     private String WS;
@@ -82,6 +86,26 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private List<Issue> auxIssues = new ArrayList<>();
     private List<priorities> auxPrio = new ArrayList<>();
     private List<Defects> auxDefects = new ArrayList<>();
+
+    private AlertDialog alertIssues;
+    private AlertDialog alertPrio;
+    private AlertDialog alertDefect;
+
+    private TQCIssueAdapter issueAdapter;
+    private TQCPrioAdapter prioAdapter;
+    private TQCDefectAdapter defectAdapter;
+
+    private ListView defectList;
+    private ListView issueList;
+    private ListView prioList;
+
+    private Defects defectSelected;
+    private priorities prioSelected;
+    private Issue issueSelected;
+
+    private boolean defectSelection = false;
+    private boolean prioSelection = false;
+    private boolean issueSelection = false;
 
     private boolean comment = false;
 
@@ -109,6 +133,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
 
         textOrd.setText(mfseqId);
         textWorkS.setText(WS);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setIcon(R.drawable.qualityreport);
+            actionBar.setTitle("Report TQC");
+        }
     }
 
     @Override
@@ -116,8 +145,9 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_DPAD_DOWN:
-                    mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
+                    mSpeechRecognizerManager = new SpeechRecognizerManager(ReportActivity.this, true);
                     mSpeechRecognizerManager.setOnResultListner(this);
+                    ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
 
@@ -165,11 +195,12 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         }
     }
     public void clickReport(View view){
+        sendedTQC = false;
         if( bitMap != null){
             Toast.makeText(getApplicationContext(), "Reporting TQC", Toast.LENGTH_LONG);
             new reportTQC().execute();
         }else{
-            Toast.makeText(this, "Please take a photo for the report", Toast.LENGTH_LONG);
+            Toast.makeText(getApplicationContext(), "Please take a photo for the report", Toast.LENGTH_LONG);
         }
     }
 
@@ -179,13 +210,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             String server = prefs.getString("cf_server", "192.168.1.166");
             final String url = "http://" + server +":8080/WebServicesCellFusion/";
-
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(url)
                     //.client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
-
             apiService = retrofit.create(APIService.class);
             Call<List<Issue>> availIssues = apiService.getAvailIssues();
             availIssues.enqueue(new Callback<List<Issue>>() {
@@ -193,17 +222,22 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxIssues = response.body();
-                        spinner = (Spinner) findViewById(R.id.spinnerAvailIssue);
-                        ArrayList<String> Issues = new ArrayList<String>();
-                        int i = 0;
-                        for(Issue issue: response.body()){
-                            Issues.add(issue.getDscr());
-                            i++;
+                        spinnerIssues = (TextView) findViewById(R.id.spinnerAvailIssue);
+                        spinnerIssues.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertIssues.show();
+
+                            }
+                        });
+                        createIssuesDialog();
+                        for( int i = 0; i < auxIssues.size(); i++){
+                            if(auxIssues.get(i).getDscr().contains("ework")){
+                                spinnerIssues.setText(auxIssues.get(i).getDscr());
+                                issueSelected = auxIssues.get(i);
+                                break;
+                            }
                         }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
-                        spinner.setAdapter(adapter);
-                        spinner.setSelection(3);
                     }
                 }
 
@@ -236,16 +270,20 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<priorities>> call, Response<List<priorities>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxPrio = response.body();
-                        spinnerPrio = (Spinner) findViewById(R.id.spinnepriority);
-                        ArrayList<String> prios = new ArrayList<String>();
-                        int i = 0;
-                        for(priorities p: response.body()){
-                            prios.add(p.getC_dscr());
-                            i++;
+                        spinnerPrio = (TextView) findViewById(R.id.spinnepriority);
+                        spinnerPrio.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertPrio.show();
+                                prioSelection = true;
+                            }
+
+                        });
+                        createPriorityDialog();
+                        if(auxPrio.size() > 0){
+                            spinnerPrio.setText(auxPrio.get(0).getC_dscr());
+                            prioSelected = auxPrio.get(0);
                         }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, prios);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
-                        spinnerPrio.setAdapter(adapter);
                     }
                 }
 
@@ -272,31 +310,6 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             String auxIdPriority="";
             String auxIdDefect="";
             String auxIdAvailIssue="";
-            int i = 0;
-            for(priorities p: auxPrio){
-                if(i == spinnerPrio.getSelectedItemPosition() ){
-                    auxIdPriority = p.getC_id().toString();
-                    i = 0;
-                    break;
-                }
-                i++;
-            }
-            for(Defects d: auxDefects){
-                if(i == spinnerDefect.getSelectedItemPosition()){
-                    auxIdDefect = d.getC_id().toString();
-                    i=0;
-                    break;
-                }
-                i++;
-            }
-            for(Issue issue : auxIssues){
-                if(i == spinner.getSelectedItemPosition()){
-                    auxIdAvailIssue = issue.getId().toString();
-                    i=0;
-                    break;
-                }
-                i++;
-            }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             resizedBitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream .toByteArray();
@@ -304,8 +317,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             EditText auxComments =(EditText) findViewById(R.id.comments);
             comments = auxComments.getText().toString();
             addNotification();
-            //TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), "[AvailIssues:2001]" );
-            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), auxIdAvailIssue,auxIdPriority,auxIdDefect, comments );
+            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), issueSelected.getId(),prioSelected.getC_id(),defectSelected.getC_id(), comments );
             final Call<List<ReportTqcResponse>> response = apiService.reportTQC( tqc );  //Return success
             response.enqueue(new Callback<List<ReportTqcResponse>>() {
                 @Override
@@ -318,8 +330,19 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                     }
                 }
                 @Override
-                public void onFailure(Call<List<ReportTqcResponse>> call, Throwable t) {
-                    Log.e("Error", t+"");
+                public void onFailure(Call<List<ReportTqcResponse>> call, Throwable trow) {
+                    if( !sendedTQC ){
+                        sendedTQC = true;
+                        new reportTQC().execute();
+                        mBuilder.setContentText("Sending again...").setProgress(0,0,false);
+                        notificationManager.notify(notificationId, mBuilder.build());
+                    }else{
+                        t.cancel();
+                        Toast.makeText(getBaseContext(), "TQC fail", Toast.LENGTH_LONG);
+                        mBuilder.setContentText("TQC failed").setProgress(0,0,false);
+                        notificationManager.notify(notificationId, mBuilder.build());
+                    }
+                    Log.e("Error", trow+"");
                 }
             });
             return null;
@@ -355,12 +378,27 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             response.enqueue(new Callback<List<SimpleResponse>>() {
                 @Override
                 public void onResponse(Call<List<SimpleResponse>> call, Response<List<SimpleResponse>> response) {
-                   t.cancel();
                    if(response.isSuccessful()) {
-                      Toast.makeText(getApplicationContext(), "TQC Reported", Toast.LENGTH_LONG);
-                      mBuilder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
-                      mBuilder.setContentText("TQC Reported").setProgress(0,0,false);
-                      notificationManager.notify(notificationId, mBuilder.build());
+                       final Handler handler = new Handler();
+                       handler.postDelayed(new Runnable() {
+                           @Override
+                           public void run() {
+                               t.cancel();
+                               mBuilder.setContentText("TQC Reported").setProgress(0,0,false);
+                               notificationManager.notify(notificationId, mBuilder.build());
+                               AlertDialog tqcReportedAlert = new AlertDialog.Builder(ReportActivity.this).create();
+                               tqcReportedAlert.setTitle("TQC Reported: " + tqcResult.getRepNumber());
+                               tqcReportedAlert.setMessage("The quality issue has been saved, a quality deviation report (TQC) has been saved and sent to the quality department and to all responsible with TQC reference number: " + tqcResult.getRepNumber());
+                               tqcReportedAlert.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                       new DialogInterface.OnClickListener() {
+                                           public void onClick(DialogInterface dialog, int which) {
+                                               dialog.dismiss();
+                                               finish();
+                                           }
+                                       });
+                               tqcReportedAlert.show();
+                           }
+                       }, 1500);
                    }
                 }
                 @Override
@@ -395,17 +433,19 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<Defects>> call, Response<List<Defects>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxDefects = response.body();
-                        spinnerDefect = (Spinner) findViewById(R.id.spinnerdefect);
-                        ArrayList<String> defs = new ArrayList<String>();
-                        int i = 0;
-                        for(Defects d: response.body()){
-                            defs.add(d.getC_dscr());
-                            i++;
+                        spinnerDefect = (TextView) findViewById(R.id.spinnerdefect);
+                        spinnerDefect.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertDefect.show();
+                                defectSelection = true;
+                            }
+                        });
+                        createDefectDialog();
+                        if(auxDefects.size() > 0){
+                            spinnerDefect.setText(auxDefects.get(0).getC_dscr());
+                            defectSelected = auxDefects.get(0);
                         }
-                        Log.d("AvailIssues",defs.toString()+"");
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, defs);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
-                        spinnerDefect.setAdapter(adapter);
                     }
                 }
 
@@ -420,81 +460,100 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
 
     @Override
     public void OnResult(ArrayList<String> commands) {
+        ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m2);
         if(!comment) {
-            for (String command : commands) {
-                if (command.toLowerCase().contains("picture")) {
-                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                        Uri photoURI = null;
-                        try {
-                            File imagesFolder = new File(Environment.getExternalStorageDirectory(), "Test");
-                            imagesFolder.mkdirs();
-                            File image = new File(imagesFolder, "foto.jpg");
-                            String path = image.getAbsolutePath();
-                            photoURI = FileProvider.getUriForFile(ReportActivity.this,
-                                    getString(R.string.file_provider_authority),
-                                    image);
+            if(defectSelection){
+                if (commands.size() > 0 && commands.get(0).toLowerCase().contains("select")) {
+                    alertDefect.dismiss();
+                    defectSelection = false;
+                    defectSelected = (Defects) defectList.getSelectedItem();
+                    spinnerDefect.setText(defectSelected.getC_dscr());
+                }
+            }else if(prioSelection){
+                if (commands.size() > 0 && commands.get(0).toLowerCase().contains("select")) {
+                    alertPrio.dismiss();
+                    prioSelection = false;
+                    prioSelected = (priorities) prioList.getSelectedItem();
+                    spinnerDefect.setText(prioSelected.getC_dscr());
+                }
+            }else if(issueSelection){
+                if (commands.size() > 0 && commands.get(0).toLowerCase().contains("select")) {
+                    alertIssues.dismiss();
+                    issueSelection = false;
+                    issueSelected = (Issue) issueList.getSelectedItem();
+                    spinnerIssues.setText(issueSelected.getDscr());
+                }
+            }else{
+                for (String command : commands) {
+                    if (command.toLowerCase().contains("picture")) {
+                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                            Uri photoURI = null;
+                            try {
+                                File imagesFolder = new File(Environment.getExternalStorageDirectory(), "Test");
+                                imagesFolder.mkdirs();
+                                File image = new File(imagesFolder, "foto.jpg");
+                                String path = image.getAbsolutePath();
+                                photoURI = FileProvider.getUriForFile(ReportActivity.this,
+                                        getString(R.string.file_provider_authority),
+                                        image);
 
-                        } catch (Exception ex) {
-                            Log.e("TakePicture", ex.getMessage());
+                            } catch (Exception ex) {
+                                Log.e("TakePicture", ex.getMessage());
+                            }
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                            startActivityForResult(takePictureIntent, 1/*PHOTO_REQUEST_CODE*/);
+                            break;
                         }
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                        startActivityForResult(takePictureIntent, 1/*PHOTO_REQUEST_CODE*/);
                     }
-                }
-                if (command.toLowerCase().contains("defect")) {
-                    spinnerDefect.performClick();
-                    Log.d("Focus", spinner + "");
-                    Log.d("Focus", spinnerDefect + "");
-                    Log.d("Focus", spinnerPrio + "");
-                    Log.d("Focus", "");
-                }
-                if (command.toLowerCase().contains("decision")) {
-                    spinner.performClick();
-                }
-                if (command.toLowerCase().contains("priority")) {
-                    spinnerPrio.performClick();
-                }
-                if (command.toLowerCase().contains("comments")) {
-                    EditText editText = findViewById(R.id.comments);
-                    editText.requestFocus();
-                    mSpeechRecognizerManager = new SpeechRecognizerManager(this, true);
-                    mSpeechRecognizerManager.setOnResultListner(this);
-                    comment = true;
-                }
-                if(command.toLowerCase().contains("send") || command.toLowerCase().contains("report")){
-                    clickReport(null);
+                    if (command.toLowerCase().contains("defect")) {
+                        defectSelection = true;
+                        alertDefect.show();
+                        spinnerDefect.performClick();
+                    }
+                    if (command.toLowerCase().contains("decision")) {
+                        issueSelection = true;
+                        alertIssues.show();
+                    }
+                    if (command.toLowerCase().contains("priority")) {
+                        spinnerPrio.performClick();
+                        prioSelection = true;
+                        alertPrio.show();
+                    }
+                    if (command.toLowerCase().contains("comments")) {
+                        EditText editText = findViewById(R.id.comments);
+                        editText.requestFocus();
+                        mSpeechRecognizerManager = new SpeechRecognizerManager(ReportActivity.this, true);
+                        mSpeechRecognizerManager.setOnResultListner(this);
+                        ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
+                        comment = true;
+                    }
+                    if(command.toLowerCase().contains("send") || command.toLowerCase().contains("report")){
+                        clickReport(null);
+                        break;
+                    }
                 }
             }
         }else{
             EditText editText = findViewById(R.id.comments);
-            editText.requestFocus();
-
+            editText.clearFocus();
+            comment = false;
             String aux = editText.getText().toString();
-            if(commands.get(0).toLowerCase().contains("finish")){
-                comment = false;
-            }else {
-                aux += " " + commands.get(0).toLowerCase();
-                editText.setText("");
-                editText.setText(aux);
-            }
+            aux += " " + commands.get(0).toLowerCase();
+            editText.setText("");
+            editText.setText(aux);
         }
-    }
-
-    public void sendimage(View v){
-        new sendFullImage().execute();
     }
 
     public void addNotification() {
         mBuilder  = new NotificationCompat.Builder(getApplicationContext(), "DEFAULT_CHANNEL")
-                .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
+                .setOnlyAlertOnce(true)
                 .setCategory(Notification.CATEGORY_MESSAGE)
                 .setContentTitle("CellFusion")
                 .setContentText("Sending TQC...")
-                .setSmallIcon(R.drawable.cflogowhite)
+                .setSmallIcon(R.drawable.qualityreport)
                 .setPriority(Notification.PRIORITY_DEFAULT)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                .setVisibility(Notification.VISIBILITY_PUBLIC);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("DEFAULT_CHANNEL",
@@ -504,17 +563,170 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         }
         mBuilder.setProgress(PROGRESS_MAX, notificationProgress, false);
         notificationManager.notify(notificationId, mBuilder.build() );
-        mBuilder.setVibrate(null);
         t = new Timer();
         t.scheduleAtFixedRate(new TimerTask() {
         @Override
             public void run() {
-                mBuilder.setVibrate(null);
                 mBuilder.setProgress(PROGRESS_MAX,notificationProgress,false);
                 notificationManager.notify(notificationId, mBuilder.build());
                 notificationProgress += 2;   //Called each time when 1000 milliseconds (1 second) (the period parameter)
             }},0,1000);
-
     }
 
+    public void createDefectDialog(){
+        defectAdapter = new TQCDefectAdapter(this, auxDefects);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ReportActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        componentView = inflater.inflate(R.layout.tqc_alert_layout, null);
+        defectList = (ListView)componentView.findViewById(R.id.tqc_element_list);
+        defectList.setAdapter(defectAdapter);
+        builder.setView(componentView);
+        builder.setTitle("Defects available");
+        builder.setIcon(R.drawable.defecticon);
+        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                alertDefect.dismiss();
+                defectSelection = false;
+            }
+        });
+        builder.setCancelable(false);
+        alertDefect = builder.create();
+        alertDefect.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_LEFT:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(ReportActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(ReportActivity.this);
+                            ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        case KeyEvent.KEYCODE_DPAD_CENTER:
+                            alertDefect.dismiss();
+                            defectSelection = false;
+                            defectSelected = (Defects) defectList.getSelectedItem();
+                            spinnerDefect.setText(defectSelected.getC_dscr());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Priority dialog selection
+     */
+    public void createPriorityDialog(){
+        prioAdapter = new TQCPrioAdapter(this, auxPrio);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ReportActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        componentView = inflater.inflate(R.layout.tqc_alert_layout, null);
+        prioList = (ListView)componentView.findViewById(R.id.tqc_element_list);
+        prioList.setAdapter(prioAdapter);
+        builder.setView(componentView);
+        builder.setTitle("Priorities");
+        builder.setIcon(R.drawable.prioicon);
+        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                alertPrio.dismiss();
+                prioSelection = false;
+            }
+        });
+        builder.setCancelable(false);
+        alertPrio = builder.create();
+        alertPrio.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_LEFT:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(ReportActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(ReportActivity.this);
+                            ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        case KeyEvent.KEYCODE_DPAD_CENTER:
+                            alertPrio.dismiss();
+                            prioSelection = false;
+                            prioSelected = (priorities) prioList.getSelectedItem();
+                            spinnerDefect.setText(prioSelected.getC_dscr());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Issues selection dialog
+     */
+    public void createIssuesDialog(){
+        issueAdapter = new TQCIssueAdapter(this, auxIssues);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ReportActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        componentView = inflater.inflate(R.layout.tqc_alert_layout, null);
+        issueList = (ListView)componentView.findViewById(R.id.tqc_element_list);
+        issueList.setAdapter(issueAdapter);
+        builder.setView(componentView);
+        builder.setTitle("Decision suggested");
+        builder.setIcon(R.drawable.descsugested);
+        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                alertIssues.dismiss();
+                issueSelection = false;
+            }
+        });
+        builder.setCancelable(false);
+        alertIssues = builder.create();
+        alertIssues.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_LEFT:
+                            mSpeechRecognizerManager = new SpeechRecognizerManager(ReportActivity.this, true);
+                            mSpeechRecognizerManager.setOnResultListner(ReportActivity.this);
+                            ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        case KeyEvent.KEYCODE_DPAD_CENTER:
+                            alertIssues.dismiss();
+                            issueSelection = false;
+                            issueSelected = (Issue) issueList.getSelectedItem();
+                            spinnerIssues.setText(issueSelected.getDscr());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mSpeechRecognizerManager != null) {
+            mSpeechRecognizerManager.destroy();
+        }
+        if( t != null){
+            t.cancel();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 }
