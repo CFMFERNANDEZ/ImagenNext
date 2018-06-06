@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,18 +18,23 @@ import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.TabWidget;
 import android.widget.TextView;
 
+
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -65,6 +71,13 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private TextView textOrd;
     private TextView textWorkS;
+    private TextView labelDecision;
+    private TextView labelPriority;
+    private TextView labelDefect;
+    private TextView labelws;
+    private TextView labelOrder;
+    private TextView labelComments;
+
     private EditText textComments;
 
     private String mfseqOrder;
@@ -79,6 +92,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private List<Defects> auxDefects = new ArrayList<>();
 
     private boolean comment = false;
+    private String font_path = "font/EUEXCF.TTF";
+    private static Typeface TF;
+
+    private boolean stateSpinner = false;
+    private String spinnerSelected;
 
 
     @Override
@@ -100,11 +118,30 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         new priority().execute();
         new defects().execute();
 
-        textOrd = (TextView) findViewById(R.id.textOrder);
-        textWorkS = (TextView) findViewById(R.id.textWS);
 
+        textOrd = findViewById(R.id.textOrder);
+        textWorkS = findViewById(R.id.textWS);
+
+         labelDecision = findViewById(R.id.decisionLabel);
+         labelPriority = findViewById(R.id.priorityLabel);
+         labelDefect = findViewById(R.id.defectLabel);
+         labelws = findViewById(R.id.wsLabel);
+         labelOrder = findViewById(R.id.orderLabel);
+         labelComments = findViewById(R.id.commentsLabel);
+
+        TF = Typeface.createFromAsset(getAssets(),font_path);
+
+        textOrd.setTypeface(TF);
+        textWorkS.setTypeface(TF);
+        labelDecision.setTypeface(TF);
+        labelPriority.setTypeface(TF);
+        labelDefect.setTypeface(TF);
+        labelws.setTypeface(TF);
+        labelOrder.setTypeface(TF);
+        labelComments.setTypeface(TF);
         textOrd.setText(mfseqId);
         textWorkS.setText(WS);
+
     }
 
     @Override
@@ -116,7 +153,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                     mSpeechRecognizerManager.setOnResultListner(this);
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-
+                    Log.d("Entro","Click derecho");
                     break;
                 case KeyEvent.KEYCODE_DPAD_UP:
                     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -200,8 +237,10 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                         }
                         Log.d("AvailIssues",Issues.toString()+"");
                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+
                         spinner.setAdapter(adapter);
+
                         spinner.setSelection(3);
                     }
                 }
@@ -442,16 +481,19 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 }
                 if (command.toLowerCase().contains("defect")) {
                     spinnerDefect.performClick();
-                    Log.d("Focus", spinner + "");
-                    Log.d("Focus", spinnerDefect + "");
-                    Log.d("Focus", spinnerPrio + "");
-                    Log.d("Focus", "");
+                    spinnerSelected = "defect";
+
                 }
                 if (command.toLowerCase().contains("decision")) {
-                    spinner.performClick();
+                    boolean auxStateSpinner = spinner.performClick();
+                    Log.d("ESTADO",auxStateSpinner+"");
+                    Log.d("CONTADOR",spinner.getCount()+"");
+                    spinnerSelected = "decision";
+
                 }
                 if (command.toLowerCase().contains("priority")) {
                     spinnerPrio.performClick();
+                    spinnerSelected = "priority";
                 }
                 if (command.toLowerCase().contains("comments")) {
                     EditText editText = findViewById(R.id.comments);
