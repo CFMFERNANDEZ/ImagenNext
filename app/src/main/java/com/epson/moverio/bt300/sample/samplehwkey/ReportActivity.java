@@ -4,11 +4,13 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -21,17 +23,22 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,6 +54,12 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ReportActivity extends AppCompatActivity implements SpeechRecognizerManager.OnResultListener {
 
@@ -65,6 +78,13 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private SpeechRecognizerManager mSpeechRecognizerManager;
     private TextView textOrd;
     private TextView textWorkS;
+    private TextView labelDecision;
+    private TextView labelPriority;
+    private TextView labelDefect;
+    private TextView labelws;
+    private TextView labelOrder;
+    private TextView labelComments;
+
     private EditText textComments;
     private NotificationCompat.Builder mBuilder;
     private NotificationManager notificationManager;
@@ -108,6 +128,11 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private boolean issueSelection = false;
 
     private boolean comment = false;
+    private String font_path = "font/EUEXCF.TTF";
+    private static Typeface TF;
+
+    private boolean stateSpinner = false;
+    private String spinnerSelected;
 
 
     @Override
@@ -128,9 +153,27 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         new priority().execute();
         new defects().execute();
 
-        textOrd = (TextView) findViewById(R.id.textOrder);
-        textWorkS = (TextView) findViewById(R.id.textWS);
 
+        textOrd = findViewById(R.id.textOrder);
+        textWorkS = findViewById(R.id.textWS);
+
+         labelDecision = findViewById(R.id.decisionLabel);
+         labelPriority = findViewById(R.id.priorityLabel);
+         labelDefect = findViewById(R.id.defectLabel);
+         labelws = findViewById(R.id.wsLabel);
+         labelOrder = findViewById(R.id.orderLabel);
+         labelComments = findViewById(R.id.commentsLabel);
+
+        TF = Typeface.createFromAsset(getAssets(),font_path);
+
+        textOrd.setTypeface(TF);
+        textWorkS.setTypeface(TF);
+        labelDecision.setTypeface(TF);
+        labelPriority.setTypeface(TF);
+        labelDefect.setTypeface(TF);
+        labelws.setTypeface(TF);
+        labelOrder.setTypeface(TF);
+        labelComments.setTypeface(TF);
         textOrd.setText(mfseqId);
         textWorkS.setText(WS);
         ActionBar actionBar = getSupportActionBar();
@@ -150,7 +193,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                     ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-
+                    Log.d("Entro","Click derecho");
                     break;
                 case KeyEvent.KEYCODE_DPAD_UP:
                     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -222,22 +265,17 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxIssues = response.body();
-                        spinnerIssues = (TextView) findViewById(R.id.spinnerAvailIssue);
-                        spinnerIssues.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                alertIssues.show();
-
-                            }
-                        });
-                        createIssuesDialog();
-                        for( int i = 0; i < auxIssues.size(); i++){
-                            if(auxIssues.get(i).getDscr().contains("ework")){
-                                spinnerIssues.setText(auxIssues.get(i).getDscr());
-                                issueSelected = auxIssues.get(i);
-                                break;
-                            }
+                        spinner = (Spinner) findViewById(R.id.spinnerAvailIssue);
+                        ArrayList<String> Issues = new ArrayList<String>();
+                        int i = 0;
+                        for(Issue issue: response.body()){
+                            Issues.add(issue.getDscr());
+                            i++;
                         }
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
+                        spinner.setAdapter(adapter);
+                        spinner.setSelection(3);
                     }
                 }
 
@@ -270,20 +308,16 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<priorities>> call, Response<List<priorities>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxPrio = response.body();
-                        spinnerPrio = (TextView) findViewById(R.id.spinnepriority);
-                        spinnerPrio.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                alertPrio.show();
-                                prioSelection = true;
-                            }
-
-                        });
-                        createPriorityDialog();
-                        if(auxPrio.size() > 0){
-                            spinnerPrio.setText(auxPrio.get(0).getC_dscr());
-                            prioSelected = auxPrio.get(0);
+                        spinnerPrio = (Spinner) findViewById(R.id.spinnepriority);
+                        ArrayList<String> prios = new ArrayList<String>();
+                        int i = 0;
+                        for(priorities p: response.body()){
+                            prios.add(p.getC_dscr());
+                            i++;
                         }
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, prios);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
+                        spinnerPrio.setAdapter(adapter);
                     }
                 }
 
