@@ -40,7 +40,7 @@ public class TQCDefectAdapter extends ArrayAdapter<Defects>{
         parentView = parent;
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.spinner_item, parent, false);
+        View rowView = inflater.inflate(R.layout.spinner_list_item, parent, false);
         TextView componentCode = (TextView) rowView.findViewById(R.id.spinerItem);
         componentCode.setText(defects.get(i).getC_dscr());
         if( i%2 == 0){

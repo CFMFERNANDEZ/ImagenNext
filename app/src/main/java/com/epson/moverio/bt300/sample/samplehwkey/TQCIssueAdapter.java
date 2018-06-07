@@ -41,7 +41,7 @@ public class TQCIssueAdapter extends ArrayAdapter<Issue>{
         parentView = parent;
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.spinner_item, parent, false);
+        View rowView = inflater.inflate(R.layout.spinner_list_item, parent, false);
         TextView componentCode = (TextView) rowView.findViewById(R.id.spinerItem);
         componentCode.setText(issues.get(i).getDscr());
         if( i%2 == 0){

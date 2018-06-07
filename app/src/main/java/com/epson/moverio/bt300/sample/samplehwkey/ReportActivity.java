@@ -138,7 +138,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.report_tqc);
+        setContentView(R.layout.spinner_item);
 
         mfseqOrder = getIntent().getStringExtra("MfseqOrder");
         fWork = (fworkModel)getIntent().getSerializableExtra("Fwork");
@@ -265,17 +265,22 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxIssues = response.body();
-                        spinner = (Spinner) findViewById(R.id.spinnerAvailIssue);
-                        ArrayList<String> Issues = new ArrayList<String>();
-                        int i = 0;
-                        for(Issue issue: response.body()){
-                            Issues.add(issue.getDscr());
-                            i++;
+                        spinnerIssues = (TextView) findViewById(R.id.spinnerIssues);
+                        spinnerIssues.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertIssues.show();
+
+                            }
+                        });
+                        createIssuesDialog();
+                        for( int i = 0; i < auxIssues.size(); i++){
+                            if(auxIssues.get(i).getDscr().contains("ework")){
+                                spinnerIssues.setText(auxIssues.get(i).getDscr());
+                                issueSelected = auxIssues.get(i);
+                                break;
+                            }
                         }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, Issues);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
-                        spinner.setAdapter(adapter);
-                        spinner.setSelection(3);
                     }
                 }
 
@@ -308,16 +313,20 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<priorities>> call, Response<List<priorities>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxPrio = response.body();
-                        spinnerPrio = (Spinner) findViewById(R.id.spinnepriority);
-                        ArrayList<String> prios = new ArrayList<String>();
-                        int i = 0;
-                        for(priorities p: response.body()){
-                            prios.add(p.getC_dscr());
-                            i++;
+                        spinnerPrio = (TextView) findViewById(R.id.spinnepriority);
+                        spinnerPrio.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertPrio.show();
+                                prioSelection = true;
+                            }
+
+                        });
+                        createPriorityDialog();
+                        if(auxPrio.size() > 0){
+                            spinnerPrio.setText(auxPrio.get(0).getC_dscr());
+                            prioSelected = auxPrio.get(0);
                         }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item, prios);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);;
-                        spinnerPrio.setAdapter(adapter);
                     }
                 }
 
@@ -467,7 +476,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onResponse(Call<List<Defects>> call, Response<List<Defects>> response) {
                     if(response.isSuccessful() && response.body().size() > 0){
                         auxDefects = response.body();
-                        spinnerDefect = (TextView) findViewById(R.id.spinnerdefect);
+                        spinnerDefect = (TextView) findViewById(R.id.spinner_defect);
                         spinnerDefect.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -508,7 +517,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                     alertPrio.dismiss();
                     prioSelection = false;
                     prioSelected = (priorities) prioList.getSelectedItem();
-                    spinnerDefect.setText(prioSelected.getC_dscr());
+                    spinnerPrio.setText(prioSelected.getC_dscr());
                 }
             }else if(issueSelection){
                 if (commands.size() > 0 && commands.get(0).toLowerCase().contains("select")) {
