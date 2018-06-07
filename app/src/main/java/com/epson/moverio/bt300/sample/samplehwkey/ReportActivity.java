@@ -94,6 +94,8 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private  Timer t;
     private boolean sendedTQC = false;
 
+    private boolean isReporting = false;
+
     private String mfseqOrder;
     private String WS;
     private fworkModel fWork;
@@ -239,12 +241,13 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     }
     public void clickReport(View view){
         sendedTQC = false;
-        if( bitMap != null){
-            Toast.makeText(getApplicationContext(), "Reporting TQC", Toast.LENGTH_LONG);
-            new reportTQC().execute();
-        }else{
-            Toast.makeText(getApplicationContext(), "Please take a photo for the report", Toast.LENGTH_LONG);
-        }
+            if( bitMap != null){
+                Toast.makeText(getApplicationContext(), "Reporting TQC", Toast.LENGTH_LONG);
+                new reportTQC().execute();
+                addNotification();
+            }else{
+                Toast.makeText(getApplicationContext(), "Please take a photo for the report", Toast.LENGTH_LONG);
+            }
     }
 
     public class availIssues extends AsyncTask<Void,Void,Void>{
@@ -342,52 +345,56 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     public class reportTQC extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... voids){
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            String server = prefs.getString("cf_server", "192.168.1.181");
-            final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(url)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            APIService apiService = retrofit.create(APIService.class);
-            String auxIdPriority="";
-            String auxIdDefect="";
-            String auxIdAvailIssue="";
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            resizedBitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream .toByteArray();
-            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            EditText auxComments =(EditText) findViewById(R.id.comments);
-            comments = auxComments.getText().toString();
-            addNotification();
-            TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), issueSelected.getId(),prioSelected.getC_id(),defectSelected.getC_id(), comments );
-            final Call<List<ReportTqcResponse>> response = apiService.reportTQC( tqc );  //Return success
-            response.enqueue(new Callback<List<ReportTqcResponse>>() {
-                @Override
-                public void onResponse(Call<List<ReportTqcResponse>> call, Response<List<ReportTqcResponse>> response) {
-                    if(response.isSuccessful()) {
-                        if( response.body().size() > 0){
-                            tqcResult = response.body().get(0);
-                            new sendFullImage().execute();
+            if(!isReporting){
+                isReporting = true;
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                String server = prefs.getString("cf_server", "192.168.1.181");
+                final String url = "http://"+ server + ":8080/WebServicesCellFusion/";
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(url)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                APIService apiService = retrofit.create(APIService.class);
+                String auxIdPriority="";
+                String auxIdDefect="";
+                String auxIdAvailIssue="";
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                resizedBitMap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream .toByteArray();
+                String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                EditText auxComments =(EditText) findViewById(R.id.comments);
+                comments = auxComments.getText().toString();
+                TQCasm tqc = new TQCasm("PLW-QAS-S","EN", encoded, fWork.getC_Id(), mfseqOrder, actualPerson.getC_id(), issueSelected.getId(),prioSelected.getC_id(),defectSelected.getC_id(), comments );
+                final Call<List<ReportTqcResponse>> response = apiService.reportTQC( tqc );  //Return success
+                response.enqueue(new Callback<List<ReportTqcResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<ReportTqcResponse>> call, Response<List<ReportTqcResponse>> response) {
+                        if(response.isSuccessful()) {
+                            if( response.body().size() > 0){
+                                tqcResult = response.body().get(0);
+                                new sendFullImage().execute();
+                            }
                         }
                     }
-                }
-                @Override
-                public void onFailure(Call<List<ReportTqcResponse>> call, Throwable trow) {
-                    if( !sendedTQC ){
-                        sendedTQC = true;
-                        new reportTQC().execute();
-                        mBuilder.setContentText("Sending again...").setProgress(0,0,false);
-                        notificationManager.notify(notificationId, mBuilder.build());
-                    }else{
-                        t.cancel();
-                        Toast.makeText(getBaseContext(), "TQC fail", Toast.LENGTH_LONG);
-                        mBuilder.setContentText("TQC failed").setProgress(0,0,false);
-                        notificationManager.notify(notificationId, mBuilder.build());
+                    @Override
+                    public void onFailure(Call<List<ReportTqcResponse>> call, Throwable trow) {
+                        if( !sendedTQC ){
+                            sendedTQC = true;
+                            isReporting = false;
+                            new reportTQC().execute();
+                            mBuilder.setContentText("Sending again...").setProgress(0,0,false);
+                            notificationManager.notify(notificationId, mBuilder.build());
+                        }else{
+                            t.cancel();
+                            isReporting = false;
+                            Toast.makeText(getBaseContext(), "TQC fail", Toast.LENGTH_LONG);
+                            mBuilder.setContentText("TQC failed").setProgress(0,0,false);
+                            notificationManager.notify(notificationId, mBuilder.build());
+                        }
+                        Log.e("Error", trow+"");
                     }
-                    Log.e("Error", trow+"");
-                }
-            });
+                });
+            }
             return null;
         }
     }
@@ -448,6 +455,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                 public void onFailure(Call<List<SimpleResponse>> call, Throwable trgh) {
                     Log.e("Error", trgh+"");
                     t.cancel();
+                    isReporting = false;
                 }
 
             });
@@ -554,7 +562,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                         alertDefect.show();
                         spinnerDefect.performClick();
                     }
-                    if (command.toLowerCase().contains("decision")) {
+                    if (command.toLowerCase().contains("decision") || command.toLowerCase().contains("decisión")  ||  command.toLowerCase().contains("desision")) {
                         issueSelection = true;
                         alertIssues.show();
                     }
@@ -746,7 +754,9 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                             alertIssues.dismiss();
                             issueSelection = false;
                             issueSelected = (Issue) issueList.getSelectedItem();
-                            spinnerIssues.setText(issueSelected.getDscr());
+                            if (issueSelected != null){
+                                spinnerIssues.setText(issueSelected.getDscr());
+                            }
                             break;
                         default:
                             break;
