@@ -28,7 +28,7 @@
     <TextView
         android:id="@+id/checkmetric_dscr"
         android:layout_toRightOf="@+id/checkmetric_code"
-        android:layout_width="500dp"
+        android:layout_width="420dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"
         android:textStyle="bold"

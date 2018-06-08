@@ -112,6 +112,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
     private AlertDialog alertIssues;
     private AlertDialog alertPrio;
     private AlertDialog alertDefect;
+    private AlertDialog tqcReportedAlert;
 
     private TQCIssueAdapter issueAdapter;
     private TQCPrioAdapter prioAdapter;
@@ -436,16 +437,33 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                                t.cancel();
                                mBuilder.setContentText("TQC Reported").setProgress(0,0,false);
                                notificationManager.notify(notificationId, mBuilder.build());
-                               AlertDialog tqcReportedAlert = new AlertDialog.Builder(ReportActivity.this).create();
+                               tqcReportedAlert = new AlertDialog.Builder(ReportActivity.this).create();
                                tqcReportedAlert.setTitle("TQC Reported: " + tqcResult.getRepNumber());
                                tqcReportedAlert.setMessage("The quality issue has been saved, a quality deviation report (TQC) has been saved and sent to the quality department and to all responsible with TQC reference number: " + tqcResult.getRepNumber());
                                tqcReportedAlert.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                                        new DialogInterface.OnClickListener() {
                                            public void onClick(DialogInterface dialog, int which) {
-                                               dialog.dismiss();
+                                               tqcReportedAlert.dismiss();
                                                finish();
                                            }
                                        });
+                               tqcReportedAlert.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                                   @Override
+                                   public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                                       if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                                           switch (event.getKeyCode()) {
+                                               case KeyEvent.KEYCODE_DPAD_DOWN:
+                                                   mSpeechRecognizerManager = new SpeechRecognizerManager(ReportActivity.this, true);
+                                                   mSpeechRecognizerManager.setOnResultListner(ReportActivity.this);
+                                                   ((ImageView)findViewById(R.id.tqc_mic)).setImageResource(R.drawable.m1);
+                                                   break;
+                                               default:
+                                                   break;
+                                           }
+                                       }
+                                       return false;
+                                   }
+                               });
                                tqcReportedAlert.show();
                            }
                        }, 1500);
@@ -581,6 +599,15 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                     }
                     if(command.toLowerCase().contains("send") || command.toLowerCase().contains("report")){
                         clickReport(null);
+
+                        break;
+                    }
+                    if(command.toLowerCase().contains("confirm")){
+                        if( tqcReportedAlert != null ){
+                            tqcReportedAlert.dismiss();
+//                            super.finish();
+                            finish();
+                        }
                         break;
                     }
                 }
@@ -590,7 +617,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             editText.clearFocus();
             comment = false;
             String aux = editText.getText().toString();
-            aux += " " + commands.get(0).toLowerCase();
+            aux = commands.get(0).toLowerCase();
             editText.setText("");
             editText.setText(aux);
         }
@@ -706,7 +733,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                             alertPrio.dismiss();
                             prioSelection = false;
                             prioSelected = (priorities) prioList.getSelectedItem();
-                            spinnerDefect.setText(prioSelected.getC_dscr());
+                            spinnerPrio.setText(prioSelected.getC_dscr());
                             break;
                         default:
                             break;

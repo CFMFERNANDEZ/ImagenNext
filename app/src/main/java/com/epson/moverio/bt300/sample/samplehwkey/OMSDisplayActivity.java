@@ -92,6 +92,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     private String mfseqorder_Id;
     private View iconMet;
     private View iconMat;
+    private View iconIssue;
     private ZXingScannerView mScannerView;
     private Boolean metricsShown = false;
     private Boolean checkMetricsShown = false;
@@ -114,6 +115,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_screen);
+
+        //iconIssue.findViewById(R.id.issue);
+        //iconIssue.setVisibility(View.VISIBLE);
 
         mContentView = findViewById(R.id.oms_image);
         setImmersive();
@@ -144,6 +148,9 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 ////            fworkActual.setC_first_event("true");
 //        }
         updateByFwork();
+
+        getSupportActionBar().hide();
+
     }
 
     public void setImmersive(){
@@ -157,6 +164,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
 
     @Override
     public void OnResult(ArrayList<String> commands) {
+        getSupportActionBar().hide();
+        setImmersive();
         ((ImageView)findViewById(R.id.animated_voice)).setImageResource(R.drawable.m2);
         for(String command:commands)
         {
@@ -526,6 +535,13 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 //alertMetric.show();
                 iconMet = (ImageView) findViewById(R.id.iconMet);
                 iconMet.setVisibility(View.VISIBLE);
+
+                iconMet.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        alertMetric.show();
+                    }
+                });
             }
             else {
                 iconMet = (ImageView) findViewById(R.id.iconMet);
@@ -536,10 +552,34 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 //alertMetric.show();
                 iconMat = (ImageView) findViewById(R.id.iconMat);
                 iconMat.setVisibility(View.VISIBLE);
+
+                iconMat.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        alertComponent.show();
+                    }
+                });
             }
             else {
                 iconMat = (ImageView) findViewById(R.id.iconMat);
                 iconMat.setVisibility(View.INVISIBLE);
+            }
+
+            if(fworkActual.getComponent() != null && fworkActual.getComponent().size() > 0){
+                iconIssue = (ImageView) findViewById(R.id.issue);
+
+                iconIssue.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intentReport = new Intent(getBaseContext(),ReportActivity.class);
+                        intentReport.putExtra("Fwork", fworkActual);
+                        intentReport.putExtra("MfseqOrder", mfseqorder_Id );
+                        intentReport.putExtra("Person", actualPerson);
+                        intentReport.putExtra("mfseqId",mfseqId);
+                        intentReport.putExtra("WS",WS);
+                        startActivity(intentReport);
+                    }
+                });
             }
 
         }

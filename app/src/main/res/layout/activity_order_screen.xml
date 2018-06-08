@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -48,20 +49,28 @@
 
         <ImageView
             android:id="@+id/iconMet"
-            android:layout_below="@id/animated_voice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:src="@drawable/metrics"
-            />
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/animated_voice"
+            android:src="@drawable/metrics" />
+
         <ImageView
             android:id="@+id/iconMat"
-            android:layout_below="@id/iconMet"
+            android:layout_width="wrap_content"
+            android:layout_height="139dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/iconMet"
+            android:layout_marginTop="-10dp"
+            android:src="@drawable/component" />
+
+        <ImageView
+            android:id="@+id/issue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:src="@drawable/component"
-            />
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/iconMat"
+            app:srcCompat="@drawable/issueicon" />
 
     </RelativeLayout>
 
