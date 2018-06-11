@@ -31,6 +31,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -245,6 +246,8 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
             if( bitMap != null){
                 Toast.makeText(getApplicationContext(), "Reporting TQC", Toast.LENGTH_LONG);
                 new reportTQC().execute();
+                Button b = findViewById(R.id.button);
+                b.setText("Sending...");
                 addNotification();
             }else{
                 Toast.makeText(getApplicationContext(), "Please take a photo for the report", Toast.LENGTH_LONG);
@@ -467,6 +470,9 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                                tqcReportedAlert.show();
                            }
                        }, 1500);
+
+                       Button b = findViewById(R.id.button);
+                       b.setText("Sent");
                    }
                 }
                 @Override
