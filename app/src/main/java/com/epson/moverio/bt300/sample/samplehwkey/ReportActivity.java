@@ -386,7 +386,7 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
                             sendedTQC = true;
                             isReporting = false;
                             new reportTQC().execute();
-                            mBuilder.setContentText("Sending again...").setProgress(0,0,false);
+                            mBuilder.setContentText("Sending...").setProgress(0,0,false);
                             notificationManager.notify(notificationId, mBuilder.build());
                         }else{
                             t.cancel();
@@ -664,14 +664,23 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         componentView = inflater.inflate(R.layout.tqc_alert_layout, null);
         defectList = (ListView)componentView.findViewById(R.id.tqc_element_list);
         defectList.setAdapter(defectAdapter);
+        defectList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                defectSelected = auxDefects.get(position);
+                if(defectSelected!= null){
+                    spinnerDefect.setText(defectSelected.getC_dscr());
+                }
+            }
+        });
         builder.setView(componentView);
         builder.setTitle("Defects available");
         builder.setIcon(R.drawable.defecticon);
         builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                alertDefect.dismiss();
                 defectSelection = false;
+                alertDefect.dismiss();
             }
         });
         builder.setCancelable(false);
@@ -712,6 +721,15 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         componentView = inflater.inflate(R.layout.tqc_alert_layout, null);
         prioList = (ListView)componentView.findViewById(R.id.tqc_element_list);
         prioList.setAdapter(prioAdapter);
+        prioList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                prioSelected = auxPrio.get(position);
+                if(prioSelected!= null){
+                    spinnerPrio.setText(prioSelected.getC_dscr());
+                }
+            }
+        });
         builder.setView(componentView);
         builder.setTitle("Priorities");
         builder.setIcon(R.drawable.prioicon);
@@ -760,6 +778,15 @@ public class ReportActivity extends AppCompatActivity implements SpeechRecognize
         componentView = inflater.inflate(R.layout.tqc_alert_layout, null);
         issueList = (ListView)componentView.findViewById(R.id.tqc_element_list);
         issueList.setAdapter(issueAdapter);
+        issueList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                issueSelected = auxIssues.get(position);
+                if(issueSelected!= null){
+                    spinnerIssues.setText(issueSelected.getDscr());
+                }
+            }
+        });
         builder.setView(componentView);
         builder.setTitle("Decision suggested");
         builder.setIcon(R.drawable.descsugested);

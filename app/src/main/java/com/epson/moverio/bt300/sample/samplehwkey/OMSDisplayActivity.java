@@ -32,9 +32,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.MediaController;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -228,6 +230,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             if( !m.getCheck()){
                                 alertCheckMetric.show();
                                 checkMetricsShown = false;
+                                break;
                             }
                         }
                     }
@@ -344,6 +347,7 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                             if( !m.getCheck()){
                                 alertCheckMetric.show();
                                 checkMetricsShown = false;
+                                break;
                             }
                         }
                     }
@@ -531,7 +535,8 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             //Update lotTRracking
             compTracking();
 
-            if(fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
+            if((fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0) ||
+                    (fworkActual.getCheckMeasures() != null && fworkActual.getCheckMeasures().size() > 0)){
                 //alertMetric.show();
                 iconMet = (ImageView) findViewById(R.id.iconMet);
                 iconMet.setVisibility(View.VISIBLE);
@@ -539,7 +544,11 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                 iconMet.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        alertMetric.show();
+                        if( fworkActual.getMeasures() != null && fworkActual.getMeasures().size() > 0){
+                            alertMetric.show();
+                        }else if (fworkActual.getCheckMeasures() != null && fworkActual.getCheckMeasures().size() > 0){
+                            alertCheckMetric.show();
+                        }
                     }
                 });
             }
@@ -690,8 +699,19 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
                                         }
                                     }
                                 }
+                                checkMetricsShown = true;
+                                if(fworkActual.getCheckMeasures()!= null && fworkActual.getCheckMeasures().size() > 0){
+                                    List<Metric> checkList =  checkListAdapter.getListMetrics();
+                                    for(Metric m : checkList){
+                                        if( !m.getCheck()){
+                                            alertCheckMetric.show();
+                                            checkMetricsShown = false;
+                                            break;
+                                        }
+                                    }
+                                }
                                 ////////////
-                                if(metricsShown){
+                                if(metricsShown && checkMetricsShown){
                                     mImageIndex++;
                                     new nextOms().execute();
                                     updateByFwork( );
@@ -922,6 +942,12 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
         checkMetricView = metricInflater.inflate(R.layout.checkmetrics_alert_layout, null);
         listViewCheckMetric = (ListView)checkMetricView.findViewById(R.id.checkmetrics_list);
         listViewCheckMetric.setAdapter(checkListAdapter);
+        listViewCheckMetric.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("CLICKLIST","CKLICKLIST");
+            }
+        });
         checkListBuilder.setView(checkMetricView);
         checkListBuilder.setTitle("Metric list");
         checkListBuilder.setIcon(R.drawable.metriclist);
@@ -929,10 +955,6 @@ public class OMSDisplayActivity extends AppCompatActivity implements SpeechRecog
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 setImmersive();
-                if(showTracking){
-                    isTrackinkVisible=true;
-                    trackingAlert.show();
-                }
             }
         });
         checkListBuilder.setCancelable(false);

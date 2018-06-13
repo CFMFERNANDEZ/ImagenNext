@@ -50,6 +50,12 @@ public class CheckListAdapter extends ArrayAdapter<Metric> {
         metricDscr.setText(metrics.get(i).getMeasure_dscr());
         Sswitch = (Switch) rowView.findViewById(R.id.check_switch);
         Sswitch.setChecked(metrics.get(i).getCheck());
+        Sswitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                metrics.get(i).setCheck(isChecked);
+            }
+        });
         return rowView;
     }
 
